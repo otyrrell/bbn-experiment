@@ -22,7 +22,26 @@ export function createDetailPanel(container: HTMLElement, bbn: BBNDefinition) {
     `;
   }
 
-  function renderNode(node: BBNNode) {
+  function renderMarginalBars(node: BBNNode): string {
+    if (!node.marginals) return "";
+    const m = node.marginals;
+    return `
+      <section>
+        <h3>Marginal Distribution</h3>
+        <div class="prob-bars">
+          ${node.states.map((s) => `
+            <div class="prob-bar-row">
+              <span class="prob-label">${escapeHtml(s)}</span>
+              <div class="prob-bar-track"><div class="prob-bar-fill inference-bar" style="width:${(m[s] ?? 0) * 100}%"></div></div>
+              <span class="prob-value">${formatProb(m[s])}</span>
+            </div>
+          `).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderNode(node: BBNNode, showInference: boolean) {
     const parents = bbn.edges.filter((e) => e.target === node.id).map((e) => bbn.nodes.find((n) => n.id === e.source)!);
     const children = bbn.edges.filter((e) => e.source === node.id).map((e) => bbn.nodes.find((n) => n.id === e.target)!);
     const isRoot = parents.length === 0;
@@ -37,6 +56,8 @@ export function createDetailPanel(container: HTMLElement, bbn: BBNDefinition) {
         </div>
         <h2>${escapeHtml(node.label)}</h2>
         ${node.description ? `<p class="description">${escapeHtml(node.description)}</p>` : ""}
+
+        ${showInference ? renderMarginalBars(node) : ""}
 
         <section>
           <h3>States</h3>
@@ -83,6 +104,28 @@ export function createDetailPanel(container: HTMLElement, bbn: BBNDefinition) {
         </div>
         <h2>${escapeHtml(source.label)} → ${escapeHtml(target.label)}</h2>
         ${edge.label ? `<p class="description">${escapeHtml(edge.label)}</p>` : ""}
+
+        <section>
+          <h3>Edge Attributes</h3>
+          <table class="cpt-table">
+            <tbody>
+              <tr><td class="parent-val">ID</td><td>${escapeHtml(edge.id)}</td></tr>
+              ${edge.label ? `<tr><td class="parent-val">Label</td><td>${escapeHtml(edge.label)}</td></tr>` : ""}
+              <tr><td class="parent-val">Source</td><td>${escapeHtml(source.label)} (${escapeHtml(edge.source)})</td></tr>
+              <tr><td class="parent-val">Target</td><td>${escapeHtml(target.label)} (${escapeHtml(edge.target)})</td></tr>
+              ${edge.strength != null ? `
+              <tr>
+                <td class="parent-val">Strength</td>
+                <td>
+                  <div class="prob-bar-row">
+                    <div class="prob-bar-track"><div class="prob-bar-fill" style="width:${edge.strength * 100}%"></div></div>
+                    <span class="prob-value">${(edge.strength * 100).toFixed(0)}%</span>
+                  </div>
+                </td>
+              </tr>` : ""}
+            </tbody>
+          </table>
+        </section>
 
         <section>
           <h3>Source Node</h3>
@@ -152,14 +195,14 @@ export function createDetailPanel(container: HTMLElement, bbn: BBNDefinition) {
     `;
   }
 
-  function update(selection: Selection) {
+  function update(selection: Selection, showInference = false) {
     if (!selection) {
       renderEmpty();
       return;
     }
     if (selection.type === "node") {
       const node = bbn.nodes.find((n) => n.id === selection.id);
-      if (node) renderNode(node);
+      if (node) renderNode(node, showInference);
     } else {
       const edge = bbn.edges.find((e) => e.id === selection.id);
       if (edge) renderEdge(edge);

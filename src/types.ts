@@ -28,6 +28,8 @@ export interface BBNNode {
   cpt: CPT | PriorDistribution;
   /** Optional observed evidence (clamped state) */
   evidence?: string;
+  /** Optional computed/provided marginal distribution for inference view */
+  marginals?: Record<string, number>;
   /** Arbitrary metadata */
   meta?: Record<string, unknown>;
 }
