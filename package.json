@@ -1,31 +1,26 @@
 {
   "name": "bbn-experiment",
   "version": "1.0.0",
-  "type": "module",
+  "private": true,
   "description": "POC library for visualizing Bayesian Belief Networks with sigma.js",
-  "main": "dist/bbn-viewer.js",
-  "module": "dist/bbn-viewer.js",
-  "types": "dist/bbn-viewer.d.ts",
+  "homepage": "https://otyrrell.github.io/bbn-experiment",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:lib": "vite build --mode lib",
-    "typecheck": "tsc --noEmit"
+    "start": "react-scripts start",
+    "build": "react-scripts build"
   },
-  "repository": {
-    "type": "git",
-    "url": "http://local_proxy@127.0.0.1:59448/git/otyrrell/bbn-experiment"
+  "browserslist": {
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
   },
   "keywords": ["bayesian", "belief-network", "bbn", "sigma", "visualization"],
-  "author": "",
-  "homepage": "https://otyrrell.github.io/bbn-experiment",
   "license": "ISC",
   "dependencies": {
     "graphology": "^0.26.0",
-    "graphology-layout": "^0.6.1",
     "graphology-layout-forceatlas2": "^0.10.1",
-    "sigma": "^3.0.2",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-resizable-panels": "^2.1.7",
+    "react-scripts": "^5.0.1",
+    "sigma": "^3.0.2"
   }
 }

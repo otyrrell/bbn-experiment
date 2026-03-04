@@ -1,15 +1,11 @@
-import type { BBNDefinition } from "./types";
-
 /**
- * Classic "Wet Grass" Bayesian network — a commonly used example.
+ * Classic "Wet Grass" Bayesian network example.
  *
  * Structure:
- *   Cloudy → Sprinkler → Wet Grass ← Rain ← Cloudy
- *
- * With an extended observation node:
- *   Wet Grass → Slippery
+ *   Cloudy -> Sprinkler -> Wet Grass <- Rain <- Cloudy
+ *   Wet Grass -> Slippery
  */
-export const wetGrassBBN: BBNDefinition = {
+export const wetGrassBBN = {
   name: "Wet Grass Network",
   description:
     "Classic BBN example modeling the causal relationships between weather, sprinklers, and grass conditions.",
@@ -60,7 +56,7 @@ export const wetGrassBBN: BBNDefinition = {
       id: "slippery",
       label: "Slippery Path",
       states: ["yes", "no"],
-      description: "Whether the garden path is slippery — a downstream consequence.",
+      description: "Whether the garden path is slippery.",
       cpt: [
         { conditions: { wet_grass: "wet" }, probabilities: { yes: 0.7, no: 0.3 } },
         { conditions: { wet_grass: "dry" }, probabilities: { yes: 0.05, no: 0.95 } },
