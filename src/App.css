@@ -542,6 +542,96 @@ section h3 {
   font-variant-numeric: tabular-nums;
 }
 
+/* Detailed parent rows with edge properties */
+.parent-list .parent-row-detailed {
+  padding: 8px 0;
+  border-bottom: 1px solid #334155;
+}
+
+.parent-list .parent-row-detailed:last-child {
+  border-bottom: none;
+}
+
+.parent-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.parent-edge-props {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+  padding-left: 2px;
+}
+
+.edge-prop-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.edge-prop-numeric {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: #1e293b;
+  color: #fbbf24;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Edge detail properties grid */
+.edge-props-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edge-prop-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edge-prop-label {
+  flex: 0 0 70px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.edge-prop-value {
+  flex: 0 0 36px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  font-variant-numeric: tabular-nums;
+}
+
+.edge-prop-bar {
+  flex: 1;
+  height: 6px;
+  background: #334155;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.edge-prop-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
 /* Metadata */
 .meta-json {
   background: #0f172a;

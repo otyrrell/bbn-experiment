@@ -9,6 +9,12 @@ export default function App() {
   const [selection, setSelection] = useState(null);
 
   useEffect(() => {
+    // If BBN data is embedded in the page (static export), use it directly
+    if (window.__BBN_DATA__) {
+      setBbn(window.__BBN_DATA__);
+      return;
+    }
+    // Otherwise fetch the example file (dev mode)
     fetch(process.env.PUBLIC_URL + "/example-bbn.json")
       .then((r) => r.json())
       .then(setBbn)

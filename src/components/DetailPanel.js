@@ -23,6 +23,20 @@ function probToColor(p) {
   return `rgb(${r},${g},${b})`;
 }
 
+const ROLE_COLORS = {
+  primary: { bg: "#1e3a5f", color: "#60a5fa" },
+  supporting: { bg: "#1e293b", color: "#94a3b8" },
+  gate: { bg: "#451a03", color: "#fbbf24" },
+  validation: { bg: "#052e16", color: "#4ade80" },
+  monitoring: { bg: "#2e1065", color: "#a78bfa" },
+};
+
+const CRIT_COLORS = {
+  "safety-critical": { bg: "#7f1d1d", color: "#fca5a5" },
+  functional: { bg: "#1e3a5f", color: "#93c5fd" },
+  informational: { bg: "#1e293b", color: "#94a3b8" },
+};
+
 function ProbBar({ label, value }) {
   const color = probToColor(value);
   return (
@@ -39,7 +53,19 @@ function ProbBar({ label, value }) {
   );
 }
 
-function FunctionDisplay({ node, parents }) {
+function EdgeBadge({ label, colorMap }) {
+  const style = colorMap[label] || { bg: "#334155", color: "#e2e8f0" };
+  return (
+    <span
+      className="edge-prop-badge"
+      style={{ background: style.bg, color: style.color }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function FunctionDisplay({ node }) {
   const func = node.function;
   if (!func) return null;
 
@@ -54,19 +80,7 @@ function FunctionDisplay({ node, parents }) {
           {Object.entries(func.params).map(([key, val]) => (
             <div key={key} className="param-row">
               <span className="param-key">{key}</span>
-              <span className="param-val">
-                {typeof val === "object"
-                  ? Object.entries(val).map(([k, v]) => {
-                      const parentNode = parents.find((p) => p.id === k);
-                      const displayName = parentNode ? parentNode.label : k;
-                      return (
-                        <span key={k} className="param-map-entry">
-                          {displayName}: {typeof v === "number" ? v.toFixed(2) : String(v)}
-                        </span>
-                      );
-                    })
-                  : String(val)}
-              </span>
+              <span className="param-val">{String(val)}</span>
             </div>
           ))}
         </div>
@@ -75,24 +89,45 @@ function FunctionDisplay({ node, parents }) {
   );
 }
 
-function ParentList({ parents }) {
+function ParentList({ parentEdges }) {
   return (
-    <ul className="relations">
-      {parents.map((p) => (
-        <li key={p.id} className="parent-row">
-          <span className="parent-name">{p.label}</span>
-          <span className="parent-value-bar">
+    <ul className="relations parent-list">
+      {parentEdges.map(({ node: p, edge }) => (
+        <li key={p.id} className="parent-row-detailed">
+          <div className="parent-main">
+            <span className="parent-name">{p.label}</span>
+            <span className="parent-value-bar">
+              <span
+                className="parent-value-fill"
+                style={{
+                  width: `${(p.value ?? 0) * 100}%`,
+                  background: probToColor(p.value),
+                }}
+              />
+            </span>
             <span
-              className="parent-value-fill"
-              style={{
-                width: `${(p.value ?? 0) * 100}%`,
-                background: probToColor(p.value),
-              }}
-            />
-          </span>
-          <span className="parent-value-num" style={{ color: probToColor(p.value) }}>
-            {formatProb(p.value)}
-          </span>
+              className="parent-value-num"
+              style={{ color: probToColor(p.value) }}
+            >
+              {formatProb(p.value)}
+            </span>
+          </div>
+          <div className="parent-edge-props">
+            {edge.weight != null && (
+              <span className="edge-prop-numeric">
+                w: {edge.weight.toFixed(2)}
+              </span>
+            )}
+            {edge.strength != null && (
+              <span className="edge-prop-numeric">
+                s: {edge.strength.toFixed(2)}
+              </span>
+            )}
+            {edge.role && <EdgeBadge label={edge.role} colorMap={ROLE_COLORS} />}
+            {edge.criticality && (
+              <EdgeBadge label={edge.criticality} colorMap={CRIT_COLORS} />
+            )}
+          </div>
         </li>
       ))}
     </ul>
@@ -114,7 +149,10 @@ function ChildList({ children }) {
               }}
             />
           </span>
-          <span className="parent-value-num" style={{ color: probToColor(c.value) }}>
+          <span
+            className="parent-value-num"
+            style={{ color: probToColor(c.value) }}
+          >
             {formatProb(c.value)}
           </span>
         </li>
@@ -124,13 +162,16 @@ function ChildList({ children }) {
 }
 
 function NodeDetail({ node, bbn }) {
-  const parents = bbn.edges
+  const parentEdges = bbn.edges
     .filter((e) => e.target === node.id)
-    .map((e) => bbn.nodes.find((n) => n.id === e.source));
+    .map((e) => ({
+      edge: e,
+      node: bbn.nodes.find((n) => n.id === e.source),
+    }));
   const children = bbn.edges
     .filter((e) => e.source === node.id)
     .map((e) => bbn.nodes.find((n) => n.id === e.target));
-  const isRoot = parents.length === 0;
+  const isRoot = parentEdges.length === 0;
 
   return (
     <div className="detail-node">
@@ -147,10 +188,10 @@ function NodeDetail({ node, bbn }) {
         <ProbBar label="" value={node.value} />
       </section>
 
-      {parents.length > 0 && (
+      {parentEdges.length > 0 && (
         <section>
           <h3>Parents</h3>
-          <ParentList parents={parents} />
+          <ParentList parentEdges={parentEdges} />
         </section>
       )}
 
@@ -163,7 +204,7 @@ function NodeDetail({ node, bbn }) {
 
       <section>
         <h3>{isRoot ? "Prior" : "Calculation Function"}</h3>
-        <FunctionDisplay node={node} parents={parents} />
+        <FunctionDisplay node={node} />
       </section>
 
       {node.meta && (
@@ -186,10 +227,11 @@ function EdgeDetail({ edge, bbn }) {
     <div className="detail-edge">
       <div className="detail-header">
         <span className="detail-type-badge edge">Edge</span>
-        {edge.strength != null && (
-          <span className="detail-type-badge strength">
-            Strength: {edge.strength.toFixed(2)}
-          </span>
+        {edge.role && (
+          <EdgeBadge label={edge.role} colorMap={ROLE_COLORS} />
+        )}
+        {edge.criticality && (
+          <EdgeBadge label={edge.criticality} colorMap={CRIT_COLORS} />
         )}
       </div>
       <h2>
@@ -197,12 +239,47 @@ function EdgeDetail({ edge, bbn }) {
       </h2>
       {edge.label && <p className="description">{edge.label}</p>}
 
-      {edge.strength != null && (
-        <section>
-          <h3>Strength</h3>
-          <ProbBar label="" value={edge.strength} />
-        </section>
-      )}
+      <section>
+        <h3>Edge Properties</h3>
+        <div className="edge-props-grid">
+          {edge.weight != null && (
+            <div className="edge-prop-item">
+              <span className="edge-prop-label">Weight</span>
+              <span className="edge-prop-value">{edge.weight.toFixed(2)}</span>
+              <div className="edge-prop-bar">
+                <div
+                  className="edge-prop-bar-fill"
+                  style={{ width: `${edge.weight * 100}%`, background: "#60a5fa" }}
+                />
+              </div>
+            </div>
+          )}
+          {edge.strength != null && (
+            <div className="edge-prop-item">
+              <span className="edge-prop-label">Strength</span>
+              <span className="edge-prop-value">{edge.strength.toFixed(2)}</span>
+              <div className="edge-prop-bar">
+                <div
+                  className="edge-prop-bar-fill"
+                  style={{ width: `${edge.strength * 100}%`, background: "#4ade80" }}
+                />
+              </div>
+            </div>
+          )}
+          {edge.role && (
+            <div className="edge-prop-item">
+              <span className="edge-prop-label">Role</span>
+              <EdgeBadge label={edge.role} colorMap={ROLE_COLORS} />
+            </div>
+          )}
+          {edge.criticality && (
+            <div className="edge-prop-item">
+              <span className="edge-prop-label">Criticality</span>
+              <EdgeBadge label={edge.criticality} colorMap={CRIT_COLORS} />
+            </div>
+          )}
+        </div>
+      </section>
 
       <section>
         <h3>Source Node</h3>
@@ -219,15 +296,6 @@ function EdgeDetail({ edge, bbn }) {
           <ProbBar label="" value={target.value} />
         </div>
       </section>
-
-      {edge.meta && (
-        <section>
-          <h3>Metadata</h3>
-          <pre className="meta-json">
-            {JSON.stringify(edge.meta, null, 2)}
-          </pre>
-        </section>
-      )}
     </div>
   );
 }
