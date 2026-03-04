@@ -1,6 +1,6 @@
 {
   "name": "Robot Mower V&V Decomposition",
-  "description": "A Bayesian Belief Network decomposing the verification and validation of a robot mower. Each node is a specific, testable claim. Edge properties (weight, strength, role, criticality) show how each parent contributes to the child's calculation. Only attributes consumed by the target function appear on each edge.",
+  "description": "Each node is a testable claim. Each edge carries only the attributes consumed by its target node's calculation function: weight (weighted_average), criticality (weakest_link), strength (noisy_and), sensitivity (noisy_or), or contribution (threshold).",
   "nodes": [
     {
       "id": "imu_calibrated",
@@ -224,7 +224,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.801
+      "value": 0.795
     },
     {
       "id": "heading_accuracy_1deg",
@@ -238,7 +238,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.801
+      "value": 0.781
     },
     {
       "id": "blade_stops_1s",
@@ -248,14 +248,11 @@
         "layer": 2
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.28
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.883
+      "value": 0.88
     },
     {
       "id": "blade_speed_regulated",
@@ -269,7 +266,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.859
+      "value": 0.878
     },
     {
       "id": "obstacle_detect_30cm",
@@ -294,10 +291,10 @@
       },
       "function": {
         "type": "noisy_or",
-        "display": "Noisy OR \u2014 any parent can contribute",
-        "formula": "1 \u2212 \u220f(1 \u2212 strength\u1d62 \u00d7 parent\u1d62)"
+        "display": "Noisy OR \u2014 any parent can trigger",
+        "formula": "1 \u2212 \u220f(1 \u2212 sensitivity\u1d62 \u00d7 parent\u1d62)"
       },
-      "value": 0.83
+      "value": 0.866
     },
     {
       "id": "lift_stops_blade_200ms",
@@ -307,14 +304,11 @@
         "layer": 2
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.22
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.871
+      "value": 0.87
     },
     {
       "id": "boundary_not_crossed",
@@ -328,7 +322,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.801
+      "value": 0.786
     },
     {
       "id": "returns_to_dock",
@@ -338,15 +332,11 @@
         "layer": 2
       },
       "function": {
-        "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
-        "params": {
-          "threshold": 0.42,
-          "steepness": 5.5
-        }
+        "type": "weighted_average",
+        "display": "Weighted average of parent confidences",
+        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.875
+      "value": 0.765
     },
     {
       "id": "straight_line_track",
@@ -360,7 +350,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.801
+      "value": 0.791
     },
     {
       "id": "turn_accuracy_5deg",
@@ -374,7 +364,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.817
+      "value": 0.814
     },
     {
       "id": "battery_low_return",
@@ -388,7 +378,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.778
+      "value": 0.743
     },
     {
       "id": "rain_triggers_return",
@@ -402,7 +392,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.827
+      "value": 0.744
     },
     {
       "id": "ota_rollback_works",
@@ -416,7 +406,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.92
+      "value": 0.929
     },
     {
       "id": "ble_app_connects_10s",
@@ -444,7 +434,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.788
+      "value": 0.772
     },
     {
       "id": "charging_completes",
@@ -458,7 +448,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.722
+      "value": 0.662
     },
     {
       "id": "motor_stall_detected",
@@ -469,10 +459,10 @@
       },
       "function": {
         "type": "noisy_or",
-        "display": "Noisy OR \u2014 any parent can contribute",
-        "formula": "1 \u2212 \u220f(1 \u2212 strength\u1d62 \u00d7 parent\u1d62)"
+        "display": "Noisy OR \u2014 any parent can trigger",
+        "formula": "1 \u2212 \u220f(1 \u2212 sensitivity\u1d62 \u00d7 parent\u1d62)"
       },
-      "value": 0.884
+      "value": 0.87
     },
     {
       "id": "slope_holds_25deg",
@@ -500,7 +490,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.877
+      "value": 0.918
     },
     {
       "id": "mows_rectangle_even",
@@ -514,7 +504,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.809
+      "value": 0.8
     },
     {
       "id": "mows_lshaped",
@@ -524,11 +514,15 @@
         "layer": 3
       },
       "function": {
-        "type": "weighted_average",
-        "display": "Weighted average of parent confidences",
-        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
+        "type": "threshold",
+        "display": "Threshold gate \u2014 parents contribute at different levels",
+        "formula": "sigmoid(k \u00d7 (\u03a3(c\u1d62 \u00d7 parent\u1d62)/\u03a3(c\u1d62) \u2212 threshold))",
+        "params": {
+          "threshold": 0.46,
+          "steepness": 12.3
+        }
       },
-      "value": 0.808
+      "value": 0.95
     },
     {
       "id": "avoids_garden_furniture",
@@ -542,7 +536,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.792
+      "value": 0.783
     },
     {
       "id": "stops_for_child",
@@ -552,14 +546,11 @@
         "layer": 3
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.12
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.834
+      "value": 0.87
     },
     {
       "id": "stops_for_pet",
@@ -569,14 +560,11 @@
         "layer": 3
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.14
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.834
+      "value": 0.88
     },
     {
       "id": "handles_slope_15deg",
@@ -590,7 +578,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.825
+      "value": 0.829
     },
     {
       "id": "survives_rain_start",
@@ -604,7 +592,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.812
+      "value": 0.758
     },
     {
       "id": "completes_full_cycle",
@@ -618,7 +606,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.624
+      "value": 0.592
     },
     {
       "id": "resumes_after_charge",
@@ -632,7 +620,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.826
+      "value": 0.743
     },
     {
       "id": "edge_cut_clean",
@@ -646,7 +634,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.801
+      "value": 0.791
     },
     {
       "id": "night_operation",
@@ -656,11 +644,15 @@
         "layer": 3
       },
       "function": {
-        "type": "weighted_average",
-        "display": "Weighted average of parent confidences",
-        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
+        "type": "threshold",
+        "display": "Threshold gate \u2014 parents contribute at different levels",
+        "formula": "sigmoid(k \u00d7 (\u03a3(c\u1d62 \u00d7 parent\u1d62)/\u03a3(c\u1d62) \u2212 threshold))",
+        "params": {
+          "threshold": 0.47,
+          "steepness": 5.1
+        }
       },
-      "value": 0.786
+      "value": 0.833
     },
     {
       "id": "recovers_from_stuck",
@@ -670,15 +662,11 @@
         "layer": 3
       },
       "function": {
-        "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
-        "params": {
-          "threshold": 0.48,
-          "steepness": 11.0
-        }
+        "type": "weighted_average",
+        "display": "Weighted average of parent confidences",
+        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.95
+      "value": 0.83
     },
     {
       "id": "handles_tall_grass",
@@ -692,7 +680,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.863
+      "value": 0.854
     },
     {
       "id": "no_damage_on_lift",
@@ -702,12 +690,9 @@
         "layer": 3
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.1
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
       "value": 0.87
     },
@@ -723,7 +708,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.895
+      "value": 0.887
     },
     {
       "id": "app_shows_status",
@@ -734,14 +719,14 @@
       },
       "function": {
         "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
+        "display": "Threshold gate \u2014 parents contribute at different levels",
+        "formula": "sigmoid(k \u00d7 (\u03a3(c\u1d62 \u00d7 parent\u1d62)/\u03a3(c\u1d62) \u2212 threshold))",
         "params": {
-          "threshold": 0.43,
-          "steepness": 12.3
+          "threshold": 0.42,
+          "steepness": 5.8
         }
       },
-      "value": 0.95
+      "value": 0.894
     },
     {
       "id": "app_starts_stops",
@@ -751,14 +736,11 @@
         "layer": 3
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.2
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.853
+      "value": 0.88
     },
     {
       "id": "theft_alarm",
@@ -769,10 +751,10 @@
       },
       "function": {
         "type": "noisy_or",
-        "display": "Noisy OR \u2014 any parent can contribute",
-        "formula": "1 \u2212 \u220f(1 \u2212 strength\u1d62 \u00d7 parent\u1d62)"
+        "display": "Noisy OR \u2014 any parent can trigger",
+        "formula": "1 \u2212 \u220f(1 \u2212 sensitivity\u1d62 \u00d7 parent\u1d62)"
       },
-      "value": 0.931
+      "value": 0.95
     },
     {
       "id": "power_outage_safe",
@@ -782,14 +764,11 @@
         "layer": 3
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.27
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.805
+      "value": 0.772
     },
     {
       "id": "multi_zone_transition",
@@ -799,15 +778,11 @@
         "layer": 3
       },
       "function": {
-        "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
-        "params": {
-          "threshold": 0.48,
-          "steepness": 12.0
-        }
+        "type": "weighted_average",
+        "display": "Weighted average of parent confidences",
+        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.95
+      "value": 0.866
     },
     {
       "id": "wet_grass_operation",
@@ -821,7 +796,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.857
+      "value": 0.859
     },
     {
       "id": "scheduled_operation",
@@ -835,7 +810,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.742
+      "value": 0.736
     },
     {
       "id": "diag_fault_reported",
@@ -846,10 +821,10 @@
       },
       "function": {
         "type": "noisy_or",
-        "display": "Noisy OR \u2014 any parent can contribute",
-        "formula": "1 \u2212 \u220f(1 \u2212 strength\u1d62 \u00d7 parent\u1d62)"
+        "display": "Noisy OR \u2014 any parent can trigger",
+        "formula": "1 \u2212 \u220f(1 \u2212 sensitivity\u1d62 \u00d7 parent\u1d62)"
       },
-      "value": 0.934
+      "value": 0.894
     },
     {
       "id": "simultaneous_obstacles",
@@ -863,7 +838,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.803
+      "value": 0.8
     },
     {
       "id": "boundary_wire_lost",
@@ -877,7 +852,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.795
+      "value": 0.788
     },
     {
       "id": "100_hours_no_fault",
@@ -888,8 +863,8 @@
       },
       "function": {
         "type": "noisy_or",
-        "display": "Noisy OR \u2014 any parent can contribute",
-        "formula": "1 \u2212 \u220f(1 \u2212 strength\u1d62 \u00d7 parent\u1d62)"
+        "display": "Noisy OR \u2014 any parent can trigger",
+        "formula": "1 \u2212 \u220f(1 \u2212 sensitivity\u1d62 \u00d7 parent\u1d62)"
       },
       "value": 0.95
     },
@@ -905,7 +880,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.777
+      "value": 0.727
     },
     {
       "id": "50_gardens_tested",
@@ -919,7 +894,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.845
+      "value": 0.842
     },
     {
       "id": "blade_contact_zero",
@@ -933,7 +908,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.842
+      "value": 0.874
     },
     {
       "id": "slope_20deg_tested",
@@ -943,15 +918,11 @@
         "layer": 4
       },
       "function": {
-        "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
-        "params": {
-          "threshold": 0.42,
-          "steepness": 7.1
-        }
+        "type": "weighted_average",
+        "display": "Weighted average of parent confidences",
+        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.916
+      "value": 0.747
     },
     {
       "id": "rain_100_events",
@@ -965,7 +936,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.823
+      "value": 0.783
     },
     {
       "id": "ota_50_updates",
@@ -979,7 +950,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.909
+      "value": 0.905
     },
     {
       "id": "app_usability_score",
@@ -993,7 +964,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.922
+      "value": 0.89
     },
     {
       "id": "emc_en55014_pass",
@@ -1007,7 +978,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.687
+      "value": 0.701
     },
     {
       "id": "iec60335_pass",
@@ -1021,7 +992,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.61
+      "value": 0.604
     },
     {
       "id": "noise_under_60db",
@@ -1035,7 +1006,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.772
+      "value": 0.766
     },
     {
       "id": "pen_test_pass",
@@ -1049,7 +1020,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.796
+      "value": 0.768
     },
     {
       "id": "gdpr_compliant",
@@ -1063,7 +1034,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.859
+      "value": 0.893
     },
     {
       "id": "battery_safety_pass",
@@ -1073,14 +1044,11 @@
         "layer": 4
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.21
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.735
+      "value": 0.741
     },
     {
       "id": "mtbf_5000hrs",
@@ -1094,7 +1062,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.897
+      "value": 0.851
     },
     {
       "id": "minus10_to_40c",
@@ -1104,11 +1072,15 @@
         "layer": 4
       },
       "function": {
-        "type": "weighted_average",
-        "display": "Weighted average of parent confidences",
-        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
+        "type": "threshold",
+        "display": "Threshold gate \u2014 parents contribute at different levels",
+        "formula": "sigmoid(k \u00d7 (\u03a3(c\u1d62 \u00d7 parent\u1d62)/\u03a3(c\u1d62) \u2212 threshold))",
+        "params": {
+          "threshold": 0.41,
+          "steepness": 10.1
+        }
       },
-      "value": 0.763
+      "value": 0.95
     },
     {
       "id": "night_safety_valid",
@@ -1118,14 +1090,11 @@
         "layer": 4
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.14
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.79
+      "value": 0.87
     },
     {
       "id": "gps_denied_safe",
@@ -1135,14 +1104,11 @@
         "layer": 4
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.13
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.802
+      "value": 0.788
     },
     {
       "id": "concurrent_mowers",
@@ -1152,15 +1118,11 @@
         "layer": 4
       },
       "function": {
-        "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
-        "params": {
-          "threshold": 0.45,
-          "steepness": 8.9
-        }
+        "type": "weighted_average",
+        "display": "Weighted average of parent confidences",
+        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.95
+      "value": 0.842
     },
     {
       "id": "installer_validates",
@@ -1174,7 +1136,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.864
+      "value": 0.867
     },
     {
       "id": "child_iso13482_pass",
@@ -1188,7 +1150,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.522
+      "value": 0.539
     },
     {
       "id": "coverage_mc_dc_80",
@@ -1202,7 +1164,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.837
+      "value": 0.819
     },
     {
       "id": "sil2_verified",
@@ -1216,7 +1178,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.697
+      "value": 0.656
     },
     {
       "id": "traceability_complete",
@@ -1230,7 +1192,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.746
+      "value": 0.724
     },
     {
       "id": "neg40_storage",
@@ -1244,7 +1206,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.867
+      "value": 0.872
     },
     {
       "id": "blade_safe",
@@ -1254,14 +1216,11 @@
         "layer": 5
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.18
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.538
+      "value": 0.604
     },
     {
       "id": "nav_reliable",
@@ -1275,7 +1234,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.865
+      "value": 0.853
     },
     {
       "id": "electrically_safe",
@@ -1285,14 +1244,11 @@
         "layer": 5
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.16
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.621
+      "value": 0.741
     },
     {
       "id": "cyber_secure",
@@ -1302,15 +1258,11 @@
         "layer": 5
       },
       "function": {
-        "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
-        "params": {
-          "threshold": 0.44,
-          "steepness": 14.2
-        }
+        "type": "weighted_average",
+        "display": "Weighted average of parent confidences",
+        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.95
+      "value": 0.838
     },
     {
       "id": "child_pet_safe",
@@ -1320,14 +1272,11 @@
         "layer": 5
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.24
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.545
+      "value": 0.589
     },
     {
       "id": "environmentally_robust",
@@ -1337,15 +1286,11 @@
         "layer": 5
       },
       "function": {
-        "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
-        "params": {
-          "threshold": 0.48,
-          "steepness": 14.9
-        }
+        "type": "weighted_average",
+        "display": "Weighted average of parent confidences",
+        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.95
+      "value": 0.875
     },
     {
       "id": "reliable_durable",
@@ -1359,7 +1304,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.87
+      "value": 0.839
     },
     {
       "id": "user_experience_ok",
@@ -1373,7 +1318,7 @@
         "display": "Weighted average of parent confidences",
         "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.871
+      "value": 0.875
     },
     {
       "id": "sw_quality_ok",
@@ -1383,15 +1328,11 @@
         "layer": 5
       },
       "function": {
-        "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
-        "params": {
-          "threshold": 0.42,
-          "steepness": 9.7
-        }
+        "type": "weighted_average",
+        "display": "Weighted average of parent confidences",
+        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
       },
-      "value": 0.95
+      "value": 0.725
     },
     {
       "id": "regulatory_pass",
@@ -1405,7 +1346,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.401
+      "value": 0.423
     },
     {
       "id": "safety_case_accepted",
@@ -1415,14 +1356,11 @@
         "layer": 5
       },
       "function": {
-        "type": "min_with_bonus",
-        "display": "Weakest link with coverage bonus",
-        "formula": "min(parents) + bonus \u00d7 (avg(parents) \u2212 min(parents))",
-        "params": {
-          "bonus": 0.1
-        }
+        "type": "weakest_link",
+        "display": "Weakest link \u2014 gate parents are hard limits, required parents are soft limits",
+        "formula": "min(gate_parents) \u2227 soft_min(required) + bonus(supporting)"
       },
-      "value": 0.551
+      "value": 0.611
     },
     {
       "id": "field_validation_done",
@@ -1433,11 +1371,11 @@
       },
       "function": {
         "type": "threshold",
-        "display": "Threshold gate",
-        "formula": "sigmoid(k \u00d7 (avg(parents) \u2212 threshold))",
+        "display": "Threshold gate \u2014 parents contribute at different levels",
+        "formula": "sigmoid(k \u00d7 (\u03a3(c\u1d62 \u00d7 parent\u1d62)/\u03a3(c\u1d62) \u2212 threshold))",
         "params": {
-          "threshold": 0.4,
-          "steepness": 9.7
+          "threshold": 0.46,
+          "steepness": 12.7
         }
       },
       "value": 0.95
@@ -1450,11 +1388,15 @@
         "layer": 5
       },
       "function": {
-        "type": "weighted_average",
-        "display": "Weighted average of parent confidences",
-        "formula": "\u03a3(w\u1d62 \u00d7 parent\u1d62) / \u03a3(w\u1d62)"
+        "type": "threshold",
+        "display": "Threshold gate \u2014 parents contribute at different levels",
+        "formula": "sigmoid(k \u00d7 (\u03a3(c\u1d62 \u00d7 parent\u1d62)/\u03a3(c\u1d62) \u2212 threshold))",
+        "params": {
+          "threshold": 0.47,
+          "steepness": 10.9
+        }
       },
-      "value": 0.888
+      "value": 0.95
     },
     {
       "id": "system_vv_complete",
@@ -1468,7 +1410,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.231
+      "value": 0.384
     },
     {
       "id": "ce_mark_granted",
@@ -1482,7 +1424,7 @@
         "display": "Noisy AND \u2014 all parents must be strong",
         "formula": "\u220f(parent\u1d62 ^ strength\u1d62)"
       },
-      "value": 0.123
+      "value": 0.159
     }
   ],
   "edges": [
@@ -1491,253 +1433,202 @@
       "source": "gps_rtk_lock",
       "target": "position_accuracy_2cm",
       "label": "RTK-GPS Fix Achieved -> Position Accuracy <2cm",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.35
+      "weight": 0.56
     },
     {
       "id": "e2",
       "source": "imu_calibrated",
       "target": "position_accuracy_2cm",
       "label": "IMU Calibration Valid -> Position Accuracy <2cm",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.92
+      "weight": 0.99
     },
     {
       "id": "e3",
       "source": "gps_rtk_lock",
       "target": "heading_accuracy_1deg",
       "label": "RTK-GPS Fix Achieved -> Heading Accuracy <1\u00b0",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.34
+      "weight": 0.74
     },
     {
       "id": "e4",
       "source": "imu_calibrated",
       "target": "heading_accuracy_1deg",
       "label": "IMU Calibration Valid -> Heading Accuracy <1\u00b0",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.94
+      "weight": 0.59
     },
     {
       "id": "e5",
       "source": "blade_motor_pwm",
       "target": "blade_stops_1s",
       "label": "Blade PWM Responds in <10ms -> Blade Stops Within 1s",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e6",
       "source": "estop_circuit_latency",
       "target": "blade_stops_1s",
       "label": "E-Stop Circuit <50ms -> Blade Stops Within 1s",
-      "role": "gate",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e7",
       "source": "blade_motor_pwm",
       "target": "blade_speed_regulated",
       "label": "Blade PWM Responds in <10ms -> Blade Speed \u00b150 RPM",
-      "role": "supporting",
-      "criticality": "safety-critical",
-      "weight": 0.54
+      "weight": 0.98
     },
     {
       "id": "e8",
       "source": "motor_current_sensed",
       "target": "blade_speed_regulated",
       "label": "Motor Current Sensed \u00b12% -> Blade Speed \u00b150 RPM",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.77
+      "weight": 0.46
     },
     {
       "id": "e9",
       "source": "ultrasonic_range_cal",
       "target": "obstacle_detect_30cm",
       "label": "Ultrasonic Range \u00b13cm -> Obstacle Detected at 30cm",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.82
+      "weight": 0.89
     },
     {
       "id": "e10",
       "source": "motor_current_sensed",
       "target": "obstacle_detect_moving",
       "label": "Motor Current Sensed \u00b12% -> Moving Object Detected 50cm",
-      "role": "supporting",
-      "criticality": "functional",
-      "strength": 0.61
+      "sensitivity": 0.8
     },
     {
       "id": "e11",
       "source": "ultrasonic_range_cal",
       "target": "obstacle_detect_moving",
       "label": "Ultrasonic Range \u00b13cm -> Moving Object Detected 50cm",
-      "role": "primary",
-      "criticality": "functional",
-      "strength": 0.84
+      "sensitivity": 0.77
     },
     {
       "id": "e12",
       "source": "estop_circuit_latency",
       "target": "lift_stops_blade_200ms",
       "label": "E-Stop Circuit <50ms -> Lift Stops Blade <200ms",
-      "role": "gate",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e13",
       "source": "tilt_sensor_threshold",
       "target": "lift_stops_blade_200ms",
       "label": "Tilt Sensor Triggers >15\u00b0 -> Lift Stops Blade <200ms",
-      "role": "gate",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e14",
       "source": "heading_accuracy_1deg",
       "target": "boundary_not_crossed",
       "label": "Heading Accuracy <1\u00b0 -> Stays Within Boundary \u00b15cm",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.36
+      "weight": 0.84
     },
     {
       "id": "e15",
       "source": "position_accuracy_2cm",
       "target": "boundary_not_crossed",
       "label": "Position Accuracy <2cm -> Stays Within Boundary \u00b15cm",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.83
+      "weight": 0.5
     },
     {
       "id": "e16",
       "source": "battery_soc_accurate",
       "target": "returns_to_dock",
       "label": "Battery SOC \u00b15% -> Returns to Dock Successfully",
-      "role": "monitoring",
-      "criticality": "functional"
+      "weight": 0.62
     },
     {
       "id": "e17",
       "source": "heading_accuracy_1deg",
       "target": "returns_to_dock",
       "label": "Heading Accuracy <1\u00b0 -> Returns to Dock Successfully",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.78
     },
     {
       "id": "e18",
       "source": "position_accuracy_2cm",
       "target": "returns_to_dock",
       "label": "Position Accuracy <2cm -> Returns to Dock Successfully",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.54
     },
     {
       "id": "e19",
       "source": "heading_accuracy_1deg",
       "target": "straight_line_track",
       "label": "Heading Accuracy <1\u00b0 -> Straight Line \u00b13cm",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.76
+      "weight": 0.36
     },
     {
       "id": "e20",
       "source": "position_accuracy_2cm",
       "target": "straight_line_track",
       "label": "Position Accuracy <2cm -> Straight Line \u00b13cm",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.5
+      "weight": 0.77
     },
     {
       "id": "e21",
       "source": "heading_accuracy_1deg",
       "target": "turn_accuracy_5deg",
       "label": "Heading Accuracy <1\u00b0 -> Turn Accuracy \u00b15\u00b0",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.58
+      "weight": 0.38
     },
     {
       "id": "e22",
       "source": "motor_current_sensed",
       "target": "turn_accuracy_5deg",
       "label": "Motor Current Sensed \u00b12% -> Turn Accuracy \u00b15\u00b0",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.71
+      "weight": 0.79
     },
     {
       "id": "e23",
       "source": "battery_soc_accurate",
       "target": "battery_low_return",
       "label": "Battery SOC \u00b15% -> Returns at 15% SOC",
-      "role": "monitoring",
-      "criticality": "functional",
-      "weight": 0.81
+      "weight": 0.66
     },
     {
       "id": "e24",
       "source": "returns_to_dock",
       "target": "battery_low_return",
       "label": "Returns to Dock Successfully -> Returns at 15% SOC",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.48
+      "weight": 0.72
     },
     {
       "id": "e25",
       "source": "rain_sensor_detects",
       "target": "rain_triggers_return",
       "label": "Rain Sensor Detects 1mm/hr -> Rain Triggers Dock Return",
-      "role": "monitoring",
-      "criticality": "functional",
-      "weight": 0.42
+      "weight": 0.87
     },
     {
       "id": "e26",
       "source": "returns_to_dock",
       "target": "rain_triggers_return",
       "label": "Returns to Dock Successfully -> Rain Triggers Dock Return",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.84
+      "weight": 0.61
     },
     {
       "id": "e27",
       "source": "flash_integrity",
       "target": "ota_rollback_works",
       "label": "Firmware CRC Verified -> OTA Rollback on Failure",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.38
+      "weight": 0.86
     },
     {
       "id": "e28",
       "source": "ota_signature_check",
       "target": "ota_rollback_works",
       "label": "OTA Signature Verified -> OTA Rollback on Failure",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.8
+      "weight": 0.48
     },
     {
       "id": "e29",
       "source": "ble_pairing_secure",
       "target": "ble_app_connects_10s",
       "label": "BLE Pairing Uses LESC -> App Connects via BLE <10s",
-      "role": "primary",
-      "criticality": "informational",
       "weight": 0.79
     },
     {
@@ -1745,1791 +1636,1442 @@
       "source": "rtos_deadlines_met",
       "target": "watchdog_recovers",
       "label": "All RTOS Deadlines Met -> Watchdog Recovery <5s",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.74
+      "weight": 0.98
     },
     {
       "id": "e31",
       "source": "watchdog_fires",
       "target": "watchdog_recovers",
       "label": "Watchdog Resets on Hang -> Watchdog Recovery <5s",
-      "role": "gate",
-      "criticality": "safety-critical",
-      "weight": 0.49
+      "weight": 0.48
     },
     {
       "id": "e32",
       "source": "battery_soc_accurate",
       "target": "charging_completes",
       "label": "Battery SOC \u00b15% -> Full Charge in <90min",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.74
+      "strength": 0.87
     },
     {
       "id": "e33",
       "source": "charging_cc_cv",
       "target": "charging_completes",
       "label": "Charging CC/CV Profile Correct -> Full Charge in <90min",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.55
+      "strength": 0.84
     },
     {
       "id": "e34",
       "source": "motor_current_sensed",
       "target": "motor_stall_detected",
       "label": "Motor Current Sensed \u00b12% -> Motor Stall Detected <500ms",
-      "role": "primary",
-      "criticality": "functional",
-      "strength": 0.87
+      "sensitivity": 0.83
     },
     {
       "id": "e35",
       "source": "rtos_deadlines_met",
       "target": "motor_stall_detected",
       "label": "All RTOS Deadlines Met -> Motor Stall Detected <500ms",
-      "role": "supporting",
-      "criticality": "functional",
-      "strength": 0.83
+      "sensitivity": 0.83
     },
     {
       "id": "e36",
       "source": "imu_calibrated",
       "target": "slope_holds_25deg",
       "label": "IMU Calibration Valid -> Holds on 25\u00b0 Slope",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.78
+      "weight": 0.91
     },
     {
       "id": "e37",
       "source": "motor_current_sensed",
       "target": "slope_holds_25deg",
       "label": "Motor Current Sensed \u00b12% -> Holds on 25\u00b0 Slope",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.33
+      "weight": 0.34
     },
     {
       "id": "e38",
       "source": "ble_pairing_secure",
       "target": "diag_log_uploaded",
       "label": "BLE Pairing Uses LESC -> Diag Log Upload <30s",
-      "role": "primary",
-      "criticality": "informational",
-      "weight": 0.97
+      "weight": 0.3
     },
     {
       "id": "e39",
       "source": "flash_integrity",
       "target": "diag_log_uploaded",
       "label": "Firmware CRC Verified -> Diag Log Upload <30s",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.42
+      "weight": 0.91
     },
     {
       "id": "e40",
       "source": "boundary_not_crossed",
       "target": "mows_rectangle_even",
       "label": "Stays Within Boundary \u00b15cm -> Mows Rectangle Evenly",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.43
+      "weight": 0.48
     },
     {
       "id": "e41",
       "source": "straight_line_track",
       "target": "mows_rectangle_even",
       "label": "Straight Line \u00b13cm -> Mows Rectangle Evenly",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.57
+      "weight": 0.63
     },
     {
       "id": "e42",
       "source": "turn_accuracy_5deg",
       "target": "mows_rectangle_even",
       "label": "Turn Accuracy \u00b15\u00b0 -> Mows Rectangle Evenly",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.98
+      "weight": 0.88
     },
     {
       "id": "e43",
       "source": "boundary_not_crossed",
       "target": "mows_lshaped",
       "label": "Stays Within Boundary \u00b15cm -> Mows L-Shaped Garden",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.36
+      "contribution": "full"
     },
     {
       "id": "e44",
       "source": "position_accuracy_2cm",
       "target": "mows_lshaped",
       "label": "Position Accuracy <2cm -> Mows L-Shaped Garden",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.6
+      "contribution": "full"
     },
     {
       "id": "e45",
       "source": "straight_line_track",
       "target": "mows_lshaped",
       "label": "Straight Line \u00b13cm -> Mows L-Shaped Garden",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.36
+      "contribution": "full"
     },
     {
       "id": "e46",
       "source": "turn_accuracy_5deg",
       "target": "mows_lshaped",
       "label": "Turn Accuracy \u00b15\u00b0 -> Mows L-Shaped Garden",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.92
+      "contribution": "half"
     },
     {
       "id": "e47",
       "source": "heading_accuracy_1deg",
       "target": "avoids_garden_furniture",
       "label": "Heading Accuracy <1\u00b0 -> Avoids Garden Furniture",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.64
+      "weight": 0.75
     },
     {
       "id": "e48",
       "source": "obstacle_detect_30cm",
       "target": "avoids_garden_furniture",
       "label": "Obstacle Detected at 30cm -> Avoids Garden Furniture",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.91
+      "weight": 0.35
     },
     {
       "id": "e49",
       "source": "straight_line_track",
       "target": "avoids_garden_furniture",
       "label": "Straight Line \u00b13cm -> Avoids Garden Furniture",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.59
+      "weight": 0.4
     },
     {
       "id": "e50",
       "source": "blade_stops_1s",
       "target": "stops_for_child",
       "label": "Blade Stops Within 1s -> Stops for Approaching Child",
-      "role": "primary",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e51",
       "source": "lift_stops_blade_200ms",
       "target": "stops_for_child",
       "label": "Lift Stops Blade <200ms -> Stops for Approaching Child",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e52",
       "source": "obstacle_detect_moving",
       "target": "stops_for_child",
       "label": "Moving Object Detected 50cm -> Stops for Approaching Child",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e53",
       "source": "blade_stops_1s",
       "target": "stops_for_pet",
       "label": "Blade Stops Within 1s -> Stops for Pet",
-      "role": "primary",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e54",
       "source": "obstacle_detect_moving",
       "target": "stops_for_pet",
       "label": "Moving Object Detected 50cm -> Stops for Pet",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e55",
       "source": "blade_speed_regulated",
       "target": "handles_slope_15deg",
       "label": "Blade Speed \u00b150 RPM -> Mows 15\u00b0 Slope Safely",
-      "role": "supporting",
-      "criticality": "safety-critical",
-      "weight": 0.69
+      "weight": 0.54
     },
     {
       "id": "e56",
       "source": "slope_holds_25deg",
       "target": "handles_slope_15deg",
       "label": "Holds on 25\u00b0 Slope -> Mows 15\u00b0 Slope Safely",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.4
+      "weight": 0.99
     },
     {
       "id": "e57",
       "source": "straight_line_track",
       "target": "handles_slope_15deg",
       "label": "Straight Line \u00b13cm -> Mows 15\u00b0 Slope Safely",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.93
+      "weight": 0.54
     },
     {
       "id": "e58",
       "source": "boundary_not_crossed",
       "target": "survives_rain_start",
       "label": "Stays Within Boundary \u00b15cm -> Handles Rain Mid-Mow",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.72
+      "weight": 0.48
     },
     {
       "id": "e59",
       "source": "rain_triggers_return",
       "target": "survives_rain_start",
       "label": "Rain Triggers Dock Return -> Handles Rain Mid-Mow",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.52
+      "weight": 0.93
     },
     {
       "id": "e60",
       "source": "battery_low_return",
       "target": "completes_full_cycle",
       "label": "Returns at 15% SOC -> Completes Full Mow Cycle",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.6
+      "strength": 0.56
     },
     {
       "id": "e61",
       "source": "mows_rectangle_even",
       "target": "completes_full_cycle",
       "label": "Mows Rectangle Evenly -> Completes Full Mow Cycle",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.97
+      "strength": 0.91
     },
     {
       "id": "e62",
       "source": "returns_to_dock",
       "target": "completes_full_cycle",
       "label": "Returns to Dock Successfully -> Completes Full Mow Cycle",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.86
+      "strength": 0.58
     },
     {
       "id": "e63",
       "source": "charging_completes",
       "target": "resumes_after_charge",
       "label": "Full Charge in <90min -> Resumes After Recharge",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.31
+      "weight": 0.6
     },
     {
       "id": "e64",
       "source": "position_accuracy_2cm",
       "target": "resumes_after_charge",
       "label": "Position Accuracy <2cm -> Resumes After Recharge",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.45
+      "weight": 0.57
     },
     {
       "id": "e65",
       "source": "returns_to_dock",
       "target": "resumes_after_charge",
       "label": "Returns to Dock Successfully -> Resumes After Recharge",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.9
+      "weight": 0.86
     },
     {
       "id": "e66",
       "source": "boundary_not_crossed",
       "target": "edge_cut_clean",
       "label": "Stays Within Boundary \u00b15cm -> Edge Cut Within 5cm",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.35
+      "weight": 0.38
     },
     {
       "id": "e67",
       "source": "position_accuracy_2cm",
       "target": "edge_cut_clean",
       "label": "Position Accuracy <2cm -> Edge Cut Within 5cm",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.81
+      "weight": 0.6
     },
     {
       "id": "e68",
       "source": "straight_line_track",
       "target": "edge_cut_clean",
       "label": "Straight Line \u00b13cm -> Edge Cut Within 5cm",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.4
+      "weight": 0.96
     },
     {
       "id": "e69",
       "source": "obstacle_detect_30cm",
       "target": "night_operation",
       "label": "Obstacle Detected at 30cm -> Operates Correctly at Night",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.47
+      "contribution": "full"
     },
     {
       "id": "e70",
       "source": "position_accuracy_2cm",
       "target": "night_operation",
       "label": "Position Accuracy <2cm -> Operates Correctly at Night",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.57
+      "contribution": "full"
     },
     {
       "id": "e71",
       "source": "ultrasonic_range_cal",
       "target": "night_operation",
       "label": "Ultrasonic Range \u00b13cm -> Operates Correctly at Night",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.94
+      "contribution": "full"
     },
     {
       "id": "e72",
       "source": "motor_stall_detected",
       "target": "recovers_from_stuck",
       "label": "Motor Stall Detected <500ms -> Recovers When Stuck",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.76
     },
     {
       "id": "e73",
       "source": "turn_accuracy_5deg",
       "target": "recovers_from_stuck",
       "label": "Turn Accuracy \u00b15\u00b0 -> Recovers When Stuck",
-      "role": "primary",
-      "criticality": "functional"
+      "weight": 0.59
     },
     {
       "id": "e74",
       "source": "watchdog_recovers",
       "target": "recovers_from_stuck",
       "label": "Watchdog Recovery <5s -> Recovers When Stuck",
-      "role": "gate",
-      "criticality": "safety-critical"
+      "weight": 0.35
     },
     {
       "id": "e75",
       "source": "blade_speed_regulated",
       "target": "handles_tall_grass",
       "label": "Blade Speed \u00b150 RPM -> Handles 15cm Tall Grass",
-      "role": "supporting",
-      "criticality": "safety-critical",
-      "weight": 0.32
+      "weight": 0.69
     },
     {
       "id": "e76",
       "source": "motor_current_sensed",
       "target": "handles_tall_grass",
       "label": "Motor Current Sensed \u00b12% -> Handles 15cm Tall Grass",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.5
+      "weight": 0.96
     },
     {
       "id": "e77",
       "source": "motor_stall_detected",
       "target": "handles_tall_grass",
       "label": "Motor Stall Detected <500ms -> Handles 15cm Tall Grass",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.86
+      "weight": 0.4
     },
     {
       "id": "e78",
       "source": "blade_stops_1s",
       "target": "no_damage_on_lift",
       "label": "Blade Stops Within 1s -> No Injury on Lift",
-      "role": "primary",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e79",
       "source": "lift_stops_blade_200ms",
       "target": "no_damage_on_lift",
       "label": "Lift Stops Blade <200ms -> No Injury on Lift",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e80",
       "source": "tilt_sensor_threshold",
       "target": "no_damage_on_lift",
       "label": "Tilt Sensor Triggers >15\u00b0 -> No Injury on Lift",
-      "role": "gate",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e81",
       "source": "ble_app_connects_10s",
       "target": "firmware_update_field",
       "label": "App Connects via BLE <10s -> Field Firmware Update Works",
-      "role": "supporting",
-      "criticality": "informational",
-      "weight": 0.54
+      "weight": 0.78
     },
     {
       "id": "e82",
       "source": "ota_rollback_works",
       "target": "firmware_update_field",
       "label": "OTA Rollback on Failure -> Field Firmware Update Works",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.41
+      "weight": 0.5
     },
     {
       "id": "e83",
       "source": "ota_signature_check",
       "target": "firmware_update_field",
       "label": "OTA Signature Verified -> Field Firmware Update Works",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.94
+      "weight": 0.31
     },
     {
       "id": "e84",
       "source": "battery_soc_accurate",
       "target": "app_shows_status",
       "label": "Battery SOC \u00b15% -> App Shows Live Status",
-      "role": "monitoring",
-      "criticality": "functional"
+      "contribution": "full"
     },
     {
       "id": "e85",
       "source": "ble_app_connects_10s",
       "target": "app_shows_status",
       "label": "App Connects via BLE <10s -> App Shows Live Status",
-      "role": "supporting",
-      "criticality": "informational"
+      "contribution": "full"
     },
     {
       "id": "e86",
       "source": "position_accuracy_2cm",
       "target": "app_shows_status",
       "label": "Position Accuracy <2cm -> App Shows Live Status",
-      "role": "supporting",
-      "criticality": "functional"
+      "contribution": "half"
     },
     {
       "id": "e87",
       "source": "blade_stops_1s",
       "target": "app_starts_stops",
       "label": "Blade Stops Within 1s -> App Start/Stop Commands Work",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e88",
       "source": "ble_app_connects_10s",
       "target": "app_starts_stops",
       "label": "App Connects via BLE <10s -> App Start/Stop Commands Work",
-      "role": "primary",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e89",
       "source": "boundary_not_crossed",
       "target": "theft_alarm",
       "label": "Stays Within Boundary \u00b15cm -> Theft Alarm Triggers",
-      "role": "supporting",
-      "criticality": "functional",
-      "strength": 0.68
+      "sensitivity": 0.84
     },
     {
       "id": "e90",
       "source": "diag_log_uploaded",
       "target": "theft_alarm",
       "label": "Diag Log Upload <30s -> Theft Alarm Triggers",
-      "role": "monitoring",
-      "criticality": "informational",
-      "strength": 0.63
+      "sensitivity": 0.75
     },
     {
       "id": "e91",
       "source": "lift_stops_blade_200ms",
       "target": "theft_alarm",
       "label": "Lift Stops Blade <200ms -> Theft Alarm Triggers",
-      "role": "supporting",
-      "criticality": "safety-critical",
-      "strength": 0.76
+      "sensitivity": 0.75
     },
     {
       "id": "e92",
       "source": "blade_stops_1s",
       "target": "power_outage_safe",
       "label": "Blade Stops Within 1s -> Safe on Power Glitch",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e93",
       "source": "estop_circuit_latency",
       "target": "power_outage_safe",
       "label": "E-Stop Circuit <50ms -> Safe on Power Glitch",
-      "role": "gate",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e94",
       "source": "watchdog_recovers",
       "target": "power_outage_safe",
       "label": "Watchdog Recovery <5s -> Safe on Power Glitch",
-      "role": "gate",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e95",
       "source": "boundary_not_crossed",
       "target": "multi_zone_transition",
       "label": "Stays Within Boundary \u00b15cm -> Zone Transition Via Passage",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.66
     },
     {
       "id": "e96",
       "source": "mows_lshaped",
       "target": "multi_zone_transition",
       "label": "Mows L-Shaped Garden -> Zone Transition Via Passage",
-      "role": "primary",
-      "criticality": "functional"
+      "weight": 0.9
     },
     {
       "id": "e97",
       "source": "position_accuracy_2cm",
       "target": "multi_zone_transition",
       "label": "Position Accuracy <2cm -> Zone Transition Via Passage",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.32
     },
     {
       "id": "e98",
       "source": "blade_speed_regulated",
       "target": "wet_grass_operation",
       "label": "Blade Speed \u00b150 RPM -> Mows Damp Grass",
-      "role": "supporting",
-      "criticality": "safety-critical",
-      "weight": 0.66
+      "weight": 0.55
     },
     {
       "id": "e99",
       "source": "motor_stall_detected",
       "target": "wet_grass_operation",
       "label": "Motor Stall Detected <500ms -> Mows Damp Grass",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.71
+      "weight": 1.0
     },
     {
       "id": "e100",
       "source": "slope_holds_25deg",
       "target": "wet_grass_operation",
       "label": "Holds on 25\u00b0 Slope -> Mows Damp Grass",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.58
+      "weight": 0.62
     },
     {
       "id": "e101",
       "source": "battery_soc_accurate",
       "target": "scheduled_operation",
       "label": "Battery SOC \u00b15% -> Scheduled Mow Executes",
-      "role": "monitoring",
-      "criticality": "functional",
-      "weight": 0.51
+      "weight": 0.7
     },
     {
       "id": "e102",
       "source": "returns_to_dock",
       "target": "scheduled_operation",
       "label": "Returns to Dock Successfully -> Scheduled Mow Executes",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.33
+      "weight": 0.92
     },
     {
       "id": "e103",
       "source": "rtos_deadlines_met",
       "target": "scheduled_operation",
       "label": "All RTOS Deadlines Met -> Scheduled Mow Executes",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.77
+      "weight": 0.42
     },
     {
       "id": "e104",
       "source": "app_shows_status",
       "target": "diag_fault_reported",
       "label": "App Shows Live Status -> Fault Reported to App",
-      "role": "supporting",
-      "criticality": "informational",
-      "strength": 0.77
+      "sensitivity": 0.83
     },
     {
       "id": "e105",
       "source": "diag_log_uploaded",
       "target": "diag_fault_reported",
       "label": "Diag Log Upload <30s -> Fault Reported to App",
-      "role": "monitoring",
-      "criticality": "informational",
-      "strength": 0.86
+      "sensitivity": 0.64
     },
     {
       "id": "e106",
       "source": "avoids_garden_furniture",
       "target": "simultaneous_obstacles",
       "label": "Avoids Garden Furniture -> Handles Multiple Obstacles",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.3
+      "weight": 0.38
     },
     {
       "id": "e107",
       "source": "obstacle_detect_30cm",
       "target": "simultaneous_obstacles",
       "label": "Obstacle Detected at 30cm -> Handles Multiple Obstacles",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.45
+      "weight": 0.3
     },
     {
       "id": "e108",
       "source": "turn_accuracy_5deg",
       "target": "simultaneous_obstacles",
       "label": "Turn Accuracy \u00b15\u00b0 -> Handles Multiple Obstacles",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.99
+      "weight": 0.91
     },
     {
       "id": "e109",
       "source": "boundary_not_crossed",
       "target": "boundary_wire_lost",
       "label": "Stays Within Boundary \u00b15cm -> Safe When GPS Lost",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.62
+      "weight": 0.46
     },
     {
       "id": "e110",
       "source": "position_accuracy_2cm",
       "target": "boundary_wire_lost",
       "label": "Position Accuracy <2cm -> Safe When GPS Lost",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.37
+      "weight": 0.85
     },
     {
       "id": "e111",
       "source": "watchdog_recovers",
       "target": "boundary_wire_lost",
       "label": "Watchdog Recovery <5s -> Safe When GPS Lost",
-      "role": "gate",
-      "criticality": "safety-critical",
-      "weight": 0.9
+      "weight": 0.36
     },
     {
       "id": "e112",
       "source": "completes_full_cycle",
       "target": "100_hours_no_fault",
       "label": "Completes Full Mow Cycle -> 100hrs Operation No Fault",
-      "role": "supporting",
-      "criticality": "functional",
-      "strength": 0.74
+      "sensitivity": 0.7
     },
     {
       "id": "e113",
       "source": "handles_tall_grass",
       "target": "100_hours_no_fault",
       "label": "Handles 15cm Tall Grass -> 100hrs Operation No Fault",
-      "role": "primary",
-      "criticality": "functional",
-      "strength": 0.74
+      "sensitivity": 0.75
     },
     {
       "id": "e114",
       "source": "recovers_from_stuck",
       "target": "100_hours_no_fault",
       "label": "Recovers When Stuck -> 100hrs Operation No Fault",
-      "role": "supporting",
-      "criticality": "functional",
-      "strength": 0.85
+      "sensitivity": 0.82
     },
     {
       "id": "e115",
       "source": "resumes_after_charge",
       "target": "100_hours_no_fault",
       "label": "Resumes After Recharge -> 100hrs Operation No Fault",
-      "role": "supporting",
-      "criticality": "functional",
-      "strength": 0.61
+      "sensitivity": 0.84
     },
     {
       "id": "e116",
       "source": "charging_completes",
       "target": "1000_cycles_dock",
       "label": "Full Charge in <90min -> 1000 Dock Cycles Reliable",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.8
+      "weight": 0.53
     },
     {
       "id": "e117",
       "source": "returns_to_dock",
       "target": "1000_cycles_dock",
       "label": "Returns to Dock Successfully -> 1000 Dock Cycles Reliable",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.45
+      "weight": 0.92
     },
     {
       "id": "e118",
       "source": "edge_cut_clean",
       "target": "50_gardens_tested",
       "label": "Edge Cut Within 5cm -> Tested in 50 Gardens",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.39
+      "weight": 0.7
     },
     {
       "id": "e119",
       "source": "mows_lshaped",
       "target": "50_gardens_tested",
       "label": "Mows L-Shaped Garden -> Tested in 50 Gardens",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.36
+      "weight": 0.41
     },
     {
       "id": "e120",
       "source": "mows_rectangle_even",
       "target": "50_gardens_tested",
       "label": "Mows Rectangle Evenly -> Tested in 50 Gardens",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.94
+      "weight": 0.59
     },
     {
       "id": "e121",
       "source": "multi_zone_transition",
       "target": "50_gardens_tested",
       "label": "Zone Transition Via Passage -> Tested in 50 Gardens",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.61
+      "weight": 0.71
     },
     {
       "id": "e122",
       "source": "no_damage_on_lift",
       "target": "blade_contact_zero",
       "label": "No Injury on Lift -> Zero Blade Contact Events",
-      "role": "supporting",
-      "criticality": "safety-critical",
-      "weight": 0.34
+      "weight": 0.71
     },
     {
       "id": "e123",
       "source": "stops_for_child",
       "target": "blade_contact_zero",
       "label": "Stops for Approaching Child -> Zero Blade Contact Events",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.52
+      "weight": 0.33
     },
     {
       "id": "e124",
       "source": "stops_for_pet",
       "target": "blade_contact_zero",
       "label": "Stops for Pet -> Zero Blade Contact Events",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.76
+      "weight": 0.66
     },
     {
       "id": "e125",
       "source": "completes_full_cycle",
       "target": "slope_20deg_tested",
       "label": "Completes Full Mow Cycle -> 20\u00b0 Slope Tested Safe",
-      "role": "primary",
-      "criticality": "functional"
+      "weight": 0.66
     },
     {
       "id": "e126",
       "source": "handles_slope_15deg",
       "target": "slope_20deg_tested",
       "label": "Mows 15\u00b0 Slope Safely -> 20\u00b0 Slope Tested Safe",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.83
     },
     {
       "id": "e127",
       "source": "slope_holds_25deg",
       "target": "slope_20deg_tested",
       "label": "Holds on 25\u00b0 Slope -> 20\u00b0 Slope Tested Safe",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.44
     },
     {
       "id": "e128",
       "source": "survives_rain_start",
       "target": "rain_100_events",
       "label": "Handles Rain Mid-Mow -> 100 Rain Events Handled",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.98
+      "weight": 0.99
     },
     {
       "id": "e129",
       "source": "wet_grass_operation",
       "target": "rain_100_events",
       "label": "Mows Damp Grass -> 100 Rain Events Handled",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.32
+      "weight": 0.33
     },
     {
       "id": "e130",
       "source": "firmware_update_field",
       "target": "ota_50_updates",
       "label": "Field Firmware Update Works -> 50 OTA Updates Successful",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.62
+      "weight": 0.71
     },
     {
       "id": "e131",
       "source": "ota_rollback_works",
       "target": "ota_50_updates",
       "label": "OTA Rollback on Failure -> 50 OTA Updates Successful",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.8
+      "weight": 0.51
     },
     {
       "id": "e132",
       "source": "app_shows_status",
       "target": "app_usability_score",
       "label": "App Shows Live Status -> App Usability Score >4/5",
-      "role": "supporting",
-      "criticality": "informational",
-      "weight": 0.62
+      "weight": 0.81
     },
     {
       "id": "e133",
       "source": "app_starts_stops",
       "target": "app_usability_score",
       "label": "App Start/Stop Commands Work -> App Usability Score >4/5",
-      "role": "supporting",
-      "criticality": "informational",
-      "weight": 0.39
+      "weight": 0.61
     },
     {
       "id": "e134",
       "source": "diag_fault_reported",
       "target": "app_usability_score",
       "label": "Fault Reported to App -> App Usability Score >4/5",
-      "role": "monitoring",
-      "criticality": "informational",
-      "weight": 0.81
+      "weight": 0.64
     },
     {
       "id": "e135",
       "source": "blade_motor_pwm",
       "target": "emc_en55014_pass",
       "label": "Blade PWM Responds in <10ms -> EN 55014 EMC Pass",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.79
+      "strength": 0.63
     },
     {
       "id": "e136",
       "source": "ble_pairing_secure",
       "target": "emc_en55014_pass",
       "label": "BLE Pairing Uses LESC -> EN 55014 EMC Pass",
-      "role": "validation",
-      "criticality": "informational",
-      "strength": 0.97
+      "strength": 0.96
     },
     {
       "id": "e137",
       "source": "charging_cc_cv",
       "target": "emc_en55014_pass",
       "label": "Charging CC/CV Profile Correct -> EN 55014 EMC Pass",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.89
+      "strength": 0.88
     },
     {
       "id": "e138",
       "source": "blade_contact_zero",
       "target": "iec60335_pass",
       "label": "Zero Blade Contact Events -> IEC 60335-2-107 Pass",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.89
+      "strength": 0.71
     },
     {
       "id": "e139",
       "source": "estop_circuit_latency",
       "target": "iec60335_pass",
       "label": "E-Stop Circuit <50ms -> IEC 60335-2-107 Pass",
-      "role": "gate",
-      "criticality": "safety-critical",
-      "strength": 0.71
+      "strength": 0.62
     },
     {
       "id": "e140",
       "source": "no_damage_on_lift",
       "target": "iec60335_pass",
       "label": "No Injury on Lift -> IEC 60335-2-107 Pass",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.55
+      "strength": 0.91
     },
     {
       "id": "e141",
       "source": "power_outage_safe",
       "target": "iec60335_pass",
       "label": "Safe on Power Glitch -> IEC 60335-2-107 Pass",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.8
+      "strength": 0.78
     },
     {
       "id": "e142",
       "source": "blade_speed_regulated",
       "target": "noise_under_60db",
       "label": "Blade Speed \u00b150 RPM -> Noise <60 dBA at 1m",
-      "role": "primary",
-      "criticality": "safety-critical",
-      "weight": 0.85
+      "weight": 0.96
     },
     {
       "id": "e143",
       "source": "completes_full_cycle",
       "target": "noise_under_60db",
       "label": "Completes Full Mow Cycle -> Noise <60 dBA at 1m",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.5
+      "weight": 0.62
     },
     {
       "id": "e144",
       "source": "ble_pairing_secure",
       "target": "pen_test_pass",
       "label": "BLE Pairing Uses LESC -> Penetration Test Passed",
-      "role": "validation",
-      "criticality": "informational",
-      "strength": 0.72
+      "strength": 0.92
     },
     {
       "id": "e145",
       "source": "ota_signature_check",
       "target": "pen_test_pass",
       "label": "OTA Signature Verified -> Penetration Test Passed",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.69
+      "strength": 0.81
     },
     {
       "id": "e146",
       "source": "theft_alarm",
       "target": "pen_test_pass",
       "label": "Theft Alarm Triggers -> Penetration Test Passed",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.65
+      "strength": 0.73
     },
     {
       "id": "e147",
       "source": "ble_pairing_secure",
       "target": "gdpr_compliant",
       "label": "BLE Pairing Uses LESC -> GDPR Data Handling Valid",
-      "role": "primary",
-      "criticality": "informational",
-      "weight": 0.93
+      "weight": 0.52
     },
     {
       "id": "e148",
       "source": "diag_log_uploaded",
       "target": "gdpr_compliant",
       "label": "Diag Log Upload <30s -> GDPR Data Handling Valid",
-      "role": "monitoring",
-      "criticality": "informational",
-      "weight": 0.45
+      "weight": 0.92
     },
     {
       "id": "e149",
       "source": "battery_soc_accurate",
       "target": "battery_safety_pass",
       "label": "Battery SOC \u00b15% -> Battery Safety UN38.3 Pass",
-      "role": "validation",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e150",
       "source": "charging_cc_cv",
       "target": "battery_safety_pass",
       "label": "Charging CC/CV Profile Correct -> Battery Safety UN38.3 Pass",
-      "role": "validation",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e151",
       "source": "1000_cycles_dock",
       "target": "mtbf_5000hrs",
       "label": "1000 Dock Cycles Reliable -> MTBF >5000 Hours",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.58
+      "weight": 0.48
     },
     {
       "id": "e152",
       "source": "100_hours_no_fault",
       "target": "mtbf_5000hrs",
       "label": "100hrs Operation No Fault -> MTBF >5000 Hours",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.38
+      "weight": 0.7
     },
     {
       "id": "e153",
       "source": "recovers_from_stuck",
       "target": "mtbf_5000hrs",
       "label": "Recovers When Stuck -> MTBF >5000 Hours",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.95
+      "weight": 0.49
     },
     {
       "id": "e154",
       "source": "100_hours_no_fault",
       "target": "minus10_to_40c",
       "label": "100hrs Operation No Fault -> -10\u00b0C to 40\u00b0C Validated",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.34
+      "contribution": "full"
     },
     {
       "id": "e155",
       "source": "battery_soc_accurate",
       "target": "minus10_to_40c",
       "label": "Battery SOC \u00b15% -> -10\u00b0C to 40\u00b0C Validated",
-      "role": "monitoring",
-      "criticality": "functional",
-      "weight": 0.88
+      "contribution": "negligible"
     },
     {
       "id": "e156",
       "source": "charging_completes",
       "target": "minus10_to_40c",
       "label": "Full Charge in <90min -> -10\u00b0C to 40\u00b0C Validated",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.61
+      "contribution": "full"
     },
     {
       "id": "e157",
       "source": "night_operation",
       "target": "night_safety_valid",
       "label": "Operates Correctly at Night -> Night Operation Safe",
-      "role": "primary",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e158",
       "source": "stops_for_child",
       "target": "night_safety_valid",
       "label": "Stops for Approaching Child -> Night Operation Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e159",
       "source": "stops_for_pet",
       "target": "night_safety_valid",
       "label": "Stops for Pet -> Night Operation Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e160",
       "source": "blade_stops_1s",
       "target": "gps_denied_safe",
       "label": "Blade Stops Within 1s -> GPS Denied Mode Safe",
-      "role": "primary",
-      "criticality": "safety-critical"
+      "criticality": "gate"
     },
     {
       "id": "e161",
       "source": "boundary_wire_lost",
       "target": "gps_denied_safe",
       "label": "Safe When GPS Lost -> GPS Denied Mode Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e162",
       "source": "returns_to_dock",
       "target": "gps_denied_safe",
       "label": "Returns to Dock Successfully -> GPS Denied Mode Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e163",
       "source": "ble_pairing_secure",
       "target": "concurrent_mowers",
       "label": "BLE Pairing Uses LESC -> 2 Mowers Same Garden OK",
-      "role": "primary",
-      "criticality": "informational"
+      "weight": 0.46
     },
     {
       "id": "e164",
       "source": "obstacle_detect_moving",
       "target": "concurrent_mowers",
       "label": "Moving Object Detected 50cm -> 2 Mowers Same Garden OK",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.83
     },
     {
       "id": "e165",
       "source": "position_accuracy_2cm",
       "target": "concurrent_mowers",
       "label": "Position Accuracy <2cm -> 2 Mowers Same Garden OK",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.5
     },
     {
       "id": "e166",
       "source": "50_gardens_tested",
       "target": "installer_validates",
       "label": "Tested in 50 Gardens -> Installer Validation Pass",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.42
+      "weight": 0.53
     },
     {
       "id": "e167",
       "source": "app_usability_score",
       "target": "installer_validates",
       "label": "App Usability Score >4/5 -> Installer Validation Pass",
-      "role": "supporting",
-      "criticality": "informational",
-      "weight": 0.32
+      "weight": 0.89
     },
     {
       "id": "e168",
       "source": "ble_app_connects_10s",
       "target": "installer_validates",
       "label": "App Connects via BLE <10s -> Installer Validation Pass",
-      "role": "primary",
-      "criticality": "informational",
-      "weight": 0.81
+      "weight": 0.42
     },
     {
       "id": "e169",
       "source": "blade_contact_zero",
       "target": "child_iso13482_pass",
       "label": "Zero Blade Contact Events -> ISO 13482 Child Safety",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.73
+      "strength": 0.79
     },
     {
       "id": "e170",
       "source": "iec60335_pass",
       "target": "child_iso13482_pass",
       "label": "IEC 60335-2-107 Pass -> ISO 13482 Child Safety",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.79
+      "strength": 0.85
     },
     {
       "id": "e171",
       "source": "stops_for_child",
       "target": "child_iso13482_pass",
       "label": "Stops for Approaching Child -> ISO 13482 Child Safety",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.74
+      "strength": 0.6
     },
     {
       "id": "e172",
       "source": "blade_stops_1s",
       "target": "coverage_mc_dc_80",
       "label": "Blade Stops Within 1s -> MC/DC Coverage >80%",
-      "role": "supporting",
-      "criticality": "safety-critical",
-      "weight": 0.36
+      "weight": 0.47
     },
     {
       "id": "e173",
       "source": "boundary_not_crossed",
       "target": "coverage_mc_dc_80",
       "label": "Stays Within Boundary \u00b15cm -> MC/DC Coverage >80%",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.6
+      "weight": 0.68
     },
     {
       "id": "e174",
       "source": "lift_stops_blade_200ms",
       "target": "coverage_mc_dc_80",
       "label": "Lift Stops Blade <200ms -> MC/DC Coverage >80%",
-      "role": "primary",
-      "criticality": "safety-critical",
-      "weight": 0.97
+      "weight": 0.58
     },
     {
       "id": "e175",
       "source": "watchdog_recovers",
       "target": "coverage_mc_dc_80",
       "label": "Watchdog Recovery <5s -> MC/DC Coverage >80%",
-      "role": "gate",
-      "criticality": "safety-critical",
-      "weight": 0.59
+      "weight": 0.77
     },
     {
       "id": "e176",
       "source": "blade_contact_zero",
       "target": "sil2_verified",
       "label": "Zero Blade Contact Events -> SIL 2 Verified",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.78
+      "strength": 0.95
     },
     {
       "id": "e177",
       "source": "coverage_mc_dc_80",
       "target": "sil2_verified",
       "label": "MC/DC Coverage >80% -> SIL 2 Verified",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.71
+      "strength": 0.85
     },
     {
       "id": "e178",
       "source": "no_damage_on_lift",
       "target": "sil2_verified",
       "label": "No Injury on Lift -> SIL 2 Verified",
-      "role": "validation",
-      "criticality": "safety-critical",
-      "strength": 0.72
+      "strength": 0.89
     },
     {
       "id": "e179",
       "source": "100_hours_no_fault",
       "target": "traceability_complete",
       "label": "100hrs Operation No Fault -> Full Traceability",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.7
+      "strength": 0.77
     },
     {
       "id": "e180",
       "source": "50_gardens_tested",
       "target": "traceability_complete",
       "label": "Tested in 50 Gardens -> Full Traceability",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.99
+      "strength": 0.52
     },
     {
       "id": "e181",
       "source": "coverage_mc_dc_80",
       "target": "traceability_complete",
       "label": "MC/DC Coverage >80% -> Full Traceability",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.51
+      "strength": 0.97
     },
     {
       "id": "e182",
       "source": "battery_soc_accurate",
       "target": "neg40_storage",
       "label": "Battery SOC \u00b15% -> -40\u00b0C Storage Validated",
-      "role": "monitoring",
-      "criticality": "functional",
-      "weight": 0.44
+      "weight": 0.56
     },
     {
       "id": "e183",
       "source": "flash_integrity",
       "target": "neg40_storage",
       "label": "Firmware CRC Verified -> -40\u00b0C Storage Validated",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.35
+      "weight": 0.57
     },
     {
       "id": "e184",
       "source": "watchdog_fires",
       "target": "neg40_storage",
       "label": "Watchdog Resets on Hang -> -40\u00b0C Storage Validated",
-      "role": "gate",
-      "criticality": "safety-critical",
-      "weight": 0.73
+      "weight": 0.95
     },
     {
       "id": "e185",
       "source": "child_iso13482_pass",
       "target": "blade_safe",
       "label": "ISO 13482 Child Safety -> Blade System Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e186",
       "source": "iec60335_pass",
       "target": "blade_safe",
       "label": "IEC 60335-2-107 Pass -> Blade System Safe",
-      "role": "primary",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e187",
       "source": "sil2_verified",
       "target": "blade_safe",
       "label": "SIL 2 Verified -> Blade System Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e188",
       "source": "100_hours_no_fault",
       "target": "nav_reliable",
       "label": "100hrs Operation No Fault -> Navigation Reliable",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.56
+      "weight": 0.68
     },
     {
       "id": "e189",
       "source": "50_gardens_tested",
       "target": "nav_reliable",
       "label": "Tested in 50 Gardens -> Navigation Reliable",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.92
+      "weight": 0.35
     },
     {
       "id": "e190",
       "source": "gps_denied_safe",
       "target": "nav_reliable",
       "label": "GPS Denied Mode Safe -> Navigation Reliable",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.47
+      "weight": 0.95
     },
     {
       "id": "e191",
       "source": "battery_safety_pass",
       "target": "electrically_safe",
       "label": "Battery Safety UN38.3 Pass -> Electrically Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e192",
       "source": "emc_en55014_pass",
       "target": "electrically_safe",
       "label": "EN 55014 EMC Pass -> Electrically Safe",
-      "role": "primary",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e193",
       "source": "iec60335_pass",
       "target": "electrically_safe",
       "label": "IEC 60335-2-107 Pass -> Electrically Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e194",
       "source": "gdpr_compliant",
       "target": "cyber_secure",
       "label": "GDPR Data Handling Valid -> Cyber Secure",
-      "role": "primary",
-      "criticality": "functional"
+      "weight": 0.57
     },
     {
       "id": "e195",
       "source": "ota_50_updates",
       "target": "cyber_secure",
       "label": "50 OTA Updates Successful -> Cyber Secure",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.52
     },
     {
       "id": "e196",
       "source": "pen_test_pass",
       "target": "cyber_secure",
       "label": "Penetration Test Passed -> Cyber Secure",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.95
     },
     {
       "id": "e197",
       "source": "blade_safe",
       "target": "child_pet_safe",
       "label": "Blade System Safe -> Child & Pet Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e198",
       "source": "child_iso13482_pass",
       "target": "child_pet_safe",
       "label": "ISO 13482 Child Safety -> Child & Pet Safe",
-      "role": "supporting",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e199",
       "source": "night_safety_valid",
       "target": "child_pet_safe",
       "label": "Night Operation Safe -> Child & Pet Safe",
-      "role": "primary",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e200",
       "source": "minus10_to_40c",
       "target": "environmentally_robust",
       "label": "-10\u00b0C to 40\u00b0C Validated -> Environmentally Robust",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.69
     },
     {
       "id": "e201",
       "source": "neg40_storage",
       "target": "environmentally_robust",
       "label": "-40\u00b0C Storage Validated -> Environmentally Robust",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.44
     },
     {
       "id": "e202",
       "source": "rain_100_events",
       "target": "environmentally_robust",
       "label": "100 Rain Events Handled -> Environmentally Robust",
-      "role": "primary",
-      "criticality": "functional"
+      "weight": 0.39
     },
     {
       "id": "e203",
       "source": "wet_grass_operation",
       "target": "environmentally_robust",
       "label": "Mows Damp Grass -> Environmentally Robust",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.92
     },
     {
       "id": "e204",
       "source": "1000_cycles_dock",
       "target": "reliable_durable",
       "label": "1000 Dock Cycles Reliable -> Reliable & Durable",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.57
+      "weight": 0.47
     },
     {
       "id": "e205",
       "source": "100_hours_no_fault",
       "target": "reliable_durable",
       "label": "100hrs Operation No Fault -> Reliable & Durable",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.36
+      "weight": 0.39
     },
     {
       "id": "e206",
       "source": "mtbf_5000hrs",
       "target": "reliable_durable",
       "label": "MTBF >5000 Hours -> Reliable & Durable",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.88
+      "weight": 0.76
     },
     {
       "id": "e207",
       "source": "50_gardens_tested",
       "target": "user_experience_ok",
       "label": "Tested in 50 Gardens -> User Experience Validated",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.45
+      "weight": 0.3
     },
     {
       "id": "e208",
       "source": "app_usability_score",
       "target": "user_experience_ok",
       "label": "App Usability Score >4/5 -> User Experience Validated",
-      "role": "supporting",
-      "criticality": "informational",
-      "weight": 0.35
+      "weight": 0.93
     },
     {
       "id": "e209",
       "source": "installer_validates",
       "target": "user_experience_ok",
       "label": "Installer Validation Pass -> User Experience Validated",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.77
+      "weight": 0.48
     },
     {
       "id": "e210",
       "source": "coverage_mc_dc_80",
       "target": "sw_quality_ok",
       "label": "MC/DC Coverage >80% -> Software Quality Assured",
-      "role": "primary",
-      "criticality": "functional"
+      "weight": 0.52
     },
     {
       "id": "e211",
       "source": "sil2_verified",
       "target": "sw_quality_ok",
       "label": "SIL 2 Verified -> Software Quality Assured",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.7
     },
     {
       "id": "e212",
       "source": "traceability_complete",
       "target": "sw_quality_ok",
       "label": "Full Traceability -> Software Quality Assured",
-      "role": "supporting",
-      "criticality": "functional"
+      "weight": 0.82
     },
     {
       "id": "e213",
       "source": "emc_en55014_pass",
       "target": "regulatory_pass",
       "label": "EN 55014 EMC Pass -> Regulatory Requirements Met",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.55
+      "strength": 0.86
     },
     {
       "id": "e214",
       "source": "gdpr_compliant",
       "target": "regulatory_pass",
       "label": "GDPR Data Handling Valid -> Regulatory Requirements Met",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.86
+      "strength": 0.69
     },
     {
       "id": "e215",
       "source": "iec60335_pass",
       "target": "regulatory_pass",
       "label": "IEC 60335-2-107 Pass -> Regulatory Requirements Met",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.75
+      "strength": 0.68
     },
     {
       "id": "e216",
       "source": "noise_under_60db",
       "target": "regulatory_pass",
       "label": "Noise <60 dBA at 1m -> Regulatory Requirements Met",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.8
+      "strength": 0.5
     },
     {
       "id": "e217",
       "source": "blade_safe",
       "target": "safety_case_accepted",
       "label": "Blade System Safe -> Safety Case Accepted",
-      "role": "validation",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e218",
       "source": "child_pet_safe",
       "target": "safety_case_accepted",
       "label": "Child & Pet Safe -> Safety Case Accepted",
-      "role": "validation",
-      "criticality": "safety-critical"
+      "criticality": "required"
     },
     {
       "id": "e219",
       "source": "electrically_safe",
       "target": "safety_case_accepted",
       "label": "Electrically Safe -> Safety Case Accepted",
-      "role": "validation",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e220",
       "source": "sw_quality_ok",
       "target": "safety_case_accepted",
       "label": "Software Quality Assured -> Safety Case Accepted",
-      "role": "validation",
-      "criticality": "safety-critical"
+      "criticality": "supporting"
     },
     {
       "id": "e221",
       "source": "100_hours_no_fault",
       "target": "field_validation_done",
       "label": "100hrs Operation No Fault -> Field Validation Complete",
-      "role": "primary",
-      "criticality": "functional"
+      "contribution": "half"
     },
     {
       "id": "e222",
       "source": "50_gardens_tested",
       "target": "field_validation_done",
       "label": "Tested in 50 Gardens -> Field Validation Complete",
-      "role": "supporting",
-      "criticality": "functional"
+      "contribution": "full"
     },
     {
       "id": "e223",
       "source": "rain_100_events",
       "target": "field_validation_done",
       "label": "100 Rain Events Handled -> Field Validation Complete",
-      "role": "supporting",
-      "criticality": "functional"
+      "contribution": "negligible"
     },
     {
       "id": "e224",
       "source": "slope_20deg_tested",
       "target": "field_validation_done",
       "label": "20\u00b0 Slope Tested Safe -> Field Validation Complete",
-      "role": "supporting",
-      "criticality": "functional"
+      "contribution": "half"
     },
     {
       "id": "e225",
       "source": "field_validation_done",
       "target": "release_approved",
       "label": "Field Validation Complete -> Software Release Approved",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.53
+      "contribution": "full"
     },
     {
       "id": "e226",
       "source": "sw_quality_ok",
       "target": "release_approved",
       "label": "Software Quality Assured -> Software Release Approved",
-      "role": "primary",
-      "criticality": "functional",
-      "weight": 0.94
+      "contribution": "full"
     },
     {
       "id": "e227",
       "source": "traceability_complete",
       "target": "release_approved",
       "label": "Full Traceability -> Software Release Approved",
-      "role": "supporting",
-      "criticality": "functional",
-      "weight": 0.64
+      "contribution": "half"
     },
     {
       "id": "e228",
       "source": "field_validation_done",
       "target": "system_vv_complete",
       "label": "Field Validation Complete -> System V&V Complete",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.6
+      "strength": 0.73
     },
     {
       "id": "e229",
       "source": "regulatory_pass",
       "target": "system_vv_complete",
       "label": "Regulatory Requirements Met -> System V&V Complete",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.91
+      "strength": 0.51
     },
     {
       "id": "e230",
       "source": "release_approved",
       "target": "system_vv_complete",
       "label": "Software Release Approved -> System V&V Complete",
-      "role": "validation",
-      "criticality": "informational",
-      "strength": 0.65
+      "strength": 0.84
     },
     {
       "id": "e231",
       "source": "safety_case_accepted",
       "target": "system_vv_complete",
       "label": "Safety Case Accepted -> System V&V Complete",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.88
+      "strength": 0.89
     },
     {
       "id": "e232",
       "source": "regulatory_pass",
       "target": "ce_mark_granted",
       "label": "Regulatory Requirements Met -> CE Mark Granted",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.86
+      "strength": 0.69
     },
     {
       "id": "e233",
       "source": "safety_case_accepted",
       "target": "ce_mark_granted",
       "label": "Safety Case Accepted -> CE Mark Granted",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.63
+      "strength": 0.65
     },
     {
       "id": "e234",
       "source": "system_vv_complete",
       "target": "ce_mark_granted",
       "label": "System V&V Complete -> CE Mark Granted",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.57
+      "strength": 0.84
     },
     {
       "id": "e235",
       "source": "user_experience_ok",
       "target": "ce_mark_granted",
       "label": "User Experience Validated -> CE Mark Granted",
-      "role": "validation",
-      "criticality": "functional",
-      "strength": 0.73
+      "strength": 0.92
     }
   ]
 }

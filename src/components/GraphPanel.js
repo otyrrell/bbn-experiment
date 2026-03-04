@@ -279,7 +279,7 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       graph.addEdge(edge.source, edge.target, {
         id: edge.id,
         label: edge.label || "",
-        size: edge.weight ? 1 + edge.weight * 3 : edge.strength ? 1 + edge.strength * 3 : 1.5,
+        size: edge.weight ? 1 + edge.weight * 3 : edge.strength ? 1 + edge.strength * 3 : edge.sensitivity ? 1 + edge.sensitivity * 3 : 1.5,
         color: EDGE_DEFAULT_COLOR,
         type: "arrow",
       });
