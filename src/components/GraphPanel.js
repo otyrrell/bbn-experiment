@@ -212,6 +212,8 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       const res = { ...attrs };
       if (sel.type === "node") {
         if (nodeId === sel.id) {
+          res.highlighted = true;
+          res.color = NODE_SELECTED_COLOR;
           res.zIndex = 2;
         } else if (connectedSet.has(nodeId)) {
           res.zIndex = 1;
