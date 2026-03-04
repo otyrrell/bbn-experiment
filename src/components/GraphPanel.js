@@ -3,15 +3,63 @@ import Graph from "graphology";
 import Sigma from "sigma";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 
-const NODE_DEFAULT_COLOR = "#6366f1";
-const NODE_EVIDENCE_COLOR = "#f59e0b";
-const NODE_HOVER_COLOR = "#818cf8";
-const NODE_SELECTED_COLOR = "#4f46e5";
-const EDGE_DEFAULT_COLOR = "#94a3b8";
-const EDGE_SELECTED_COLOR = "#4f46e5";
+// Modern, bold lighter palette
+const EDGE_DEFAULT_COLOR = "#cbd5e1";
+const EDGE_SELECTED_COLOR = "#3b82f6";
+const EDGE_FADED_COLOR = "#e2e8f020";
+const NODE_FADED_COLOR = "#94a3b830";
+const NODE_SELECTED_COLOR = "#3b82f6";
+const NODE_HOVER_RING = "#60a5fa";
+
+// Probability-based color scale: red (0) -> amber (0.5) -> emerald (1)
+function probToColor(p) {
+  if (p == null) return "#94a3b8";
+  const clamped = Math.max(0, Math.min(1, p));
+  if (clamped < 0.5) {
+    const t = clamped / 0.5;
+    const r = Math.round(239 + (245 - 239) * t);
+    const g = Math.round(68 + (158 - 68) * t);
+    const b = Math.round(68 + (11 - 68) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+  const t = (clamped - 0.5) / 0.5;
+  const r = Math.round(245 + (16 - 245) * t);
+  const g = Math.round(158 + (185 - 158) * t);
+  const b = Math.round(11 + (129 - 11) * t);
+  return `rgb(${r},${g},${b})`;
+}
+
+// Get the "positive" probability for a node — the first state's marginal
+function getNodeProbability(node) {
+  if (!node.marginals) return null;
+  const states = node.states || Object.keys(node.marginals);
+  if (states.length === 0) return null;
+  return node.marginals[states[0]] ?? null;
+}
 
 function isRootNode(bbn, nodeId) {
   return !bbn.edges.some((e) => e.target === nodeId);
+}
+
+// Collect all ancestors (full upstream dependency chain) of a given node
+function getAncestors(bbn, nodeId) {
+  const parentMap = new Map();
+  for (const edge of bbn.edges) {
+    if (!parentMap.has(edge.target)) parentMap.set(edge.target, []);
+    parentMap.get(edge.target).push(edge.source);
+  }
+  const visited = new Set();
+  const stack = [nodeId];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (visited.has(current)) continue;
+    visited.add(current);
+    for (const parent of parentMap.get(current) || []) {
+      stack.push(parent);
+    }
+  }
+  visited.delete(nodeId); // don't include the node itself as its own ancestor
+  return visited;
 }
 
 function assignHierarchicalLayout(graph, bbn) {
@@ -27,7 +75,9 @@ function assignHierarchicalLayout(graph, bbn) {
   }
 
   const depth = new Map();
-  const roots = bbn.nodes.filter((n) => (parents.get(n.id)?.length ?? 0) === 0);
+  const roots = bbn.nodes.filter(
+    (n) => (parents.get(n.id)?.length ?? 0) === 0
+  );
 
   const inDegree = new Map();
   for (const node of bbn.nodes) {
@@ -60,8 +110,9 @@ function assignHierarchicalLayout(graph, bbn) {
     layers.get(d).push(id);
   }
 
-  const ySpacing = 200;
-  const xSpacing = 150;
+  // More generous spacing to avoid overlaps
+  const ySpacing = 350;
+  const xSpacing = 250;
 
   for (const [layerDepth, nodeIds] of layers) {
     const layerWidth = (nodeIds.length - 1) * xSpacing;
@@ -76,15 +127,17 @@ function assignHierarchicalLayout(graph, bbn) {
   graph.forEachNode((id, attrs) => savedY.set(id, attrs.y));
 
   forceAtlas2.assign(graph, {
-    iterations: 50,
+    iterations: 100,
     settings: {
-      gravity: 0.5,
-      scalingRatio: 20,
+      gravity: 0.3,
+      scalingRatio: 40,
       barnesHutOptimize: true,
-      slowDown: 10,
+      slowDown: 15,
+      strongGravityMode: false,
     },
   });
 
+  // Restore Y to keep hierarchy, but let X spread out
   graph.forEachNode((id) => {
     graph.setNodeAttribute(id, "y", savedY.get(id));
   });
@@ -94,30 +147,76 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
   const containerRef = useRef(null);
   const rendererRef = useRef(null);
   const graphRef = useRef(null);
+  const bbnRef = useRef(bbn);
+  bbnRef.current = bbn;
 
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
 
   const applySelection = useCallback((renderer, graph, sel) => {
+    const currentBbn = bbnRef.current;
+
+    if (!sel) {
+      // No selection — show everything normally
+      renderer.setSetting("nodeReducer", null);
+      renderer.setSetting("edgeReducer", null);
+      renderer.refresh();
+      return;
+    }
+
+    // For node selection, compute full ancestor set
+    let ancestorSet = null;
+    let relevantEdges = null;
+    if (sel.type === "node") {
+      ancestorSet = getAncestors(currentBbn, sel.id);
+      // Edges that connect within the dependency chain (ancestors + selected node)
+      const fullSet = new Set(ancestorSet);
+      fullSet.add(sel.id);
+      relevantEdges = new Set();
+      for (const edge of currentBbn.edges) {
+        if (fullSet.has(edge.source) && fullSet.has(edge.target)) {
+          relevantEdges.add(edge.id);
+        }
+      }
+    }
+
     renderer.setSetting("nodeReducer", (nodeId, attrs) => {
       const res = { ...attrs };
-      if (sel?.type === "node" && sel.id === nodeId) {
-        res.color = NODE_SELECTED_COLOR;
-        res.highlighted = true;
-        res.zIndex = 1;
+      if (sel.type === "node") {
+        if (nodeId === sel.id) {
+          res.color = NODE_SELECTED_COLOR;
+          res.highlighted = true;
+          res.zIndex = 2;
+        } else if (ancestorSet.has(nodeId)) {
+          // Ancestor nodes keep their color but get highlighted
+          res.highlighted = true;
+          res.zIndex = 1;
+        } else {
+          res.color = NODE_FADED_COLOR;
+          res.label = "";
+          res.zIndex = 0;
+        }
       }
       return res;
     });
+
     renderer.setSetting("edgeReducer", (edgeId, attrs) => {
       const res = { ...attrs };
-      if (sel?.type === "edge" && sel.id === edgeId) {
+      if (sel.type === "edge" && sel.id === edgeId) {
         res.color = EDGE_SELECTED_COLOR;
         res.size = (attrs.size || 2) + 2;
-      } else if (sel?.type === "node") {
+      } else if (sel.type === "node") {
+        // Match edge by graphology key — need to check source/target
         const source = graph.source(edgeId);
         const target = graph.target(edgeId);
-        if (source === sel.id || target === sel.id) {
+        const edgeData = bbnRef.current.edges.find(
+          (e) => e.source === source && e.target === target
+        );
+        if (edgeData && relevantEdges.has(edgeData.id)) {
           res.color = EDGE_SELECTED_COLOR;
+          res.size = (attrs.size || 2) + 1;
+        } else {
+          res.color = EDGE_FADED_COLOR;
         }
       }
       return res;
@@ -129,7 +228,6 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Clean up previous
     if (rendererRef.current) {
       rendererRef.current.kill();
       rendererRef.current = null;
@@ -138,15 +236,16 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
 
     const graph = new Graph();
     const nodeCount = bbn.nodes.length;
-    const baseSize = nodeCount > 50 ? 8 : 12;
-    const rootSize = nodeCount > 50 ? 11 : 16;
+    const baseSize = nodeCount > 50 ? 9 : 14;
+    const rootSize = nodeCount > 50 ? 13 : 18;
 
     for (const node of bbn.nodes) {
       const isRoot = isRootNode(bbn, node.id);
+      const prob = getNodeProbability(node);
       graph.addNode(node.id, {
         label: node.label,
         size: isRoot ? rootSize : baseSize,
-        color: node.evidence ? NODE_EVIDENCE_COLOR : NODE_DEFAULT_COLOR,
+        color: probToColor(prob),
         type: "circle",
       });
     }
@@ -155,7 +254,7 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       graph.addEdge(edge.source, edge.target, {
         id: edge.id,
         label: edge.label || "",
-        size: edge.strength ? 1 + edge.strength * 4 : 2,
+        size: edge.strength ? 1 + edge.strength * 3 : 1.5,
         color: EDGE_DEFAULT_COLOR,
         type: "arrow",
       });
@@ -164,11 +263,15 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
     assignHierarchicalLayout(graph, bbn);
 
     const renderer = new Sigma(graph, containerRef.current, {
-      renderEdgeLabels: true,
+      renderEdgeLabels: false,
       defaultEdgeType: "arrow",
       allowInvalidContainer: true,
       enableEdgeClickEvents: true,
       enableEdgeHoverEvents: true,
+      labelRenderedSizeThreshold: 6,
+      labelColor: { color: "#334155" },
+      labelSize: 12,
+      labelWeight: "bold",
     });
 
     graphRef.current = graph;
@@ -178,25 +281,13 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
 
     renderer.on("enterNode", ({ node }) => {
       hoveredNode = node;
-      graph.setNodeAttribute(
-        node,
-        "color",
-        bbn.nodes.find((n) => n.id === node)?.evidence
-          ? NODE_EVIDENCE_COLOR
-          : NODE_HOVER_COLOR
-      );
+      graph.setNodeAttribute(node, "highlighted", true);
       containerRef.current.style.cursor = "pointer";
     });
 
     renderer.on("leaveNode", ({ node }) => {
       hoveredNode = null;
-      graph.setNodeAttribute(
-        node,
-        "color",
-        bbn.nodes.find((n) => n.id === node)?.evidence
-          ? NODE_EVIDENCE_COLOR
-          : NODE_DEFAULT_COLOR
-      );
+      graph.setNodeAttribute(node, "highlighted", false);
       containerRef.current.style.cursor = "default";
     });
 
@@ -231,7 +322,6 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
     };
   }, [bbn, applySelection]);
 
-  // Update selection highlight when selection prop changes
   useEffect(() => {
     if (rendererRef.current && graphRef.current) {
       applySelection(rendererRef.current, graphRef.current, selection);
@@ -242,6 +332,11 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
     <div className="panel">
       <div className="panel-toolbar">
         <h2>Graph</h2>
+        <div className="probability-legend">
+          <span className="legend-label">Low</span>
+          <div className="legend-gradient" />
+          <span className="legend-label">High</span>
+        </div>
       </div>
       <div className="panel-content graph-container" ref={containerRef} />
     </div>
