@@ -1,14 +1,20 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import JsonEditorPanel from "./components/JsonEditorPanel";
 import GraphPanel from "./components/GraphPanel";
 import DetailPanel from "./components/DetailPanel";
-import { wetGrassBBN } from "./exampleBbn";
 import "./App.css";
 
 export default function App() {
-  const [bbn, setBbn] = useState(wetGrassBBN);
+  const [bbn, setBbn] = useState(null);
   const [selection, setSelection] = useState(null);
+
+  useEffect(() => {
+    fetch(process.env.PUBLIC_URL + "/example-bbn.json")
+      .then((r) => r.json())
+      .then(setBbn)
+      .catch((e) => console.error("Failed to load example BBN:", e));
+  }, []);
 
   const handleBbnChange = useCallback((newBbn) => {
     setBbn(newBbn);
@@ -18,6 +24,14 @@ export default function App() {
   const handleSelect = useCallback((sel) => {
     setSelection(sel);
   }, []);
+
+  if (!bbn) {
+    return (
+      <div className="app">
+        <div className="loading">Loading example BBN...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">

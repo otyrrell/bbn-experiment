@@ -4,6 +4,15 @@
   flex-direction: column;
 }
 
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
 .app-header {
   display: flex;
   align-items: baseline;

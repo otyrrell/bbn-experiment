@@ -1,7 +1,15 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 
 export default function JsonEditorPanel({ bbn, onBbnChange }) {
   const [text, setText] = useState(JSON.stringify(bbn, null, 2));
+  const isFirstLoad = useRef(true);
+
+  useEffect(() => {
+    if (isFirstLoad.current && bbn) {
+      setText(JSON.stringify(bbn, null, 2));
+      isFirstLoad.current = false;
+    }
+  }, [bbn]);
   const [error, setError] = useState(null);
 
   const handleRender = useCallback(() => {
