@@ -13,14 +13,33 @@ function formatProb(p) {
   return (p * 100).toFixed(1) + "%";
 }
 
+// Same probability color scale as the graph: red (0) -> amber (0.5) -> emerald (1)
+function probToColor(p) {
+  if (p == null) return "#94a3b8";
+  const clamped = Math.max(0, Math.min(1, p));
+  if (clamped < 0.5) {
+    const t = clamped / 0.5;
+    const r = Math.round(239 + (245 - 239) * t);
+    const g = Math.round(68 + (158 - 68) * t);
+    const b = Math.round(68 + (11 - 68) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+  const t = (clamped - 0.5) / 0.5;
+  const r = Math.round(245 + (16 - 245) * t);
+  const g = Math.round(158 + (185 - 158) * t);
+  const b = Math.round(11 + (129 - 11) * t);
+  return `rgb(${r},${g},${b})`;
+}
+
 function ProbBar({ label, value }) {
+  const color = probToColor(value);
   return (
     <div className="prob-bar-row">
       <span className="prob-label">{label}</span>
       <div className="prob-bar-track">
         <div
           className="prob-bar-fill"
-          style={{ width: `${(value ?? 0) * 100}%` }}
+          style={{ width: `${(value ?? 0) * 100}%`, background: color }}
         />
       </div>
       <span className="prob-value">{formatProb(value)}</span>

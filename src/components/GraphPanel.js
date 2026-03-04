@@ -4,7 +4,7 @@ import Sigma from "sigma";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 
 // Modern, bold lighter palette
-const EDGE_DEFAULT_COLOR = "#cbd5e1";
+const EDGE_DEFAULT_COLOR = "#475569";
 const EDGE_SELECTED_COLOR = "#3b82f6";
 const EDGE_FADED_COLOR = "#e2e8f020";
 const NODE_FADED_COLOR = "#94a3b830";
@@ -110,9 +110,11 @@ function assignHierarchicalLayout(graph, bbn) {
     layers.get(d).push(id);
   }
 
-  // More generous spacing to avoid overlaps
-  const ySpacing = 350;
-  const xSpacing = 250;
+  // Scale spacing based on the widest layer to prevent overlap
+  const maxLayerSize = Math.max(...[...layers.values()].map((l) => l.length));
+  const nodeCount = bbn.nodes.length;
+  const ySpacing = nodeCount > 50 ? 500 : 350;
+  const xSpacing = nodeCount > 50 ? 400 : 250;
 
   for (const [layerDepth, nodeIds] of layers) {
     const layerWidth = (nodeIds.length - 1) * xSpacing;
@@ -127,12 +129,13 @@ function assignHierarchicalLayout(graph, bbn) {
   graph.forEachNode((id, attrs) => savedY.set(id, attrs.y));
 
   forceAtlas2.assign(graph, {
-    iterations: 100,
+    iterations: 200,
     settings: {
-      gravity: 0.3,
-      scalingRatio: 40,
+      gravity: 0.05,
+      scalingRatio: 100,
       barnesHutOptimize: true,
-      slowDown: 15,
+      barnesHutTheta: 0.5,
+      slowDown: 10,
       strongGravityMode: false,
     },
   });
@@ -268,8 +271,8 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       allowInvalidContainer: true,
       enableEdgeClickEvents: true,
       enableEdgeHoverEvents: true,
-      labelRenderedSizeThreshold: 6,
-      labelColor: { color: "#334155" },
+      labelRenderedSizeThreshold: 4,
+      labelColor: { color: "#e2e8f0" },
       labelSize: 12,
       labelWeight: "bold",
     });
