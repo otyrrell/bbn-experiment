@@ -59,7 +59,28 @@ function getAncestors(bbn, nodeId) {
       stack.push(parent);
     }
   }
-  visited.delete(nodeId); // don't include the node itself as its own ancestor
+  visited.delete(nodeId);
+  return visited;
+}
+
+// Collect all descendants (full downstream dependency chain) of a given node
+function getDescendants(bbn, nodeId) {
+  const childMap = new Map();
+  for (const edge of bbn.edges) {
+    if (!childMap.has(edge.source)) childMap.set(edge.source, []);
+    childMap.get(edge.source).push(edge.target);
+  }
+  const visited = new Set();
+  const stack = [nodeId];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (visited.has(current)) continue;
+    visited.add(current);
+    for (const child of childMap.get(current) || []) {
+      stack.push(child);
+    }
+  }
+  visited.delete(nodeId);
   return visited;
 }
 
@@ -169,13 +190,15 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       return;
     }
 
-    // For node selection, compute full ancestor set
-    let ancestorSet = null;
+    // For node selection, compute full ancestor + descendant sets
+    let connectedSet = null;
     let relevantEdges = null;
     if (sel.type === "node") {
-      ancestorSet = getAncestors(currentBbn, sel.id);
-      // Edges that connect within the dependency chain (ancestors + selected node)
-      const fullSet = new Set(ancestorSet);
+      const ancestorSet = getAncestors(currentBbn, sel.id);
+      const descendantSet = getDescendants(currentBbn, sel.id);
+      connectedSet = new Set([...ancestorSet, ...descendantSet]);
+      // Edges that connect within the full dependency chain
+      const fullSet = new Set(connectedSet);
       fullSet.add(sel.id);
       relevantEdges = new Set();
       for (const edge of currentBbn.edges) {
@@ -189,13 +212,10 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       const res = { ...attrs };
       if (sel.type === "node") {
         if (nodeId === sel.id) {
-          // Selected node: keep normal color, just bump z-index
           res.zIndex = 2;
-        } else if (ancestorSet.has(nodeId)) {
-          // Ancestors keep their normal appearance
+        } else if (connectedSet.has(nodeId)) {
           res.zIndex = 1;
         } else {
-          // Faded: nearly invisible, shrunk, no label
           res.color = NODE_FADED_COLOR;
           res.size = (attrs.size || 10) * 0.4;
           res.label = "";
@@ -259,7 +279,7 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       graph.addEdge(edge.source, edge.target, {
         id: edge.id,
         label: edge.label || "",
-        size: edge.strength ? 1 + edge.strength * 3 : 1.5,
+        size: edge.weight ? 1 + edge.weight * 3 : edge.strength ? 1 + edge.strength * 3 : 1.5,
         color: EDGE_DEFAULT_COLOR,
         type: "arrow",
       });
