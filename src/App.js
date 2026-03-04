@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
-import JsonEditorPanel from "./components/JsonEditorPanel";
 import GraphPanel from "./components/GraphPanel";
 import DetailPanel from "./components/DetailPanel";
 import "./App.css";
@@ -14,11 +13,6 @@ export default function App() {
       .then((r) => r.json())
       .then(setBbn)
       .catch((e) => console.error("Failed to load example BBN:", e));
-  }, []);
-
-  const handleBbnChange = useCallback((newBbn) => {
-    setBbn(newBbn);
-    setSelection(null);
   }, []);
 
   const handleSelect = useCallback((sel) => {
@@ -41,11 +35,7 @@ export default function App() {
       </header>
       <div className="app-body">
         <PanelGroup direction="horizontal" autoSaveId="main-layout">
-          <Panel defaultSize={25} minSize={15} id="json-panel">
-            <JsonEditorPanel bbn={bbn} onBbnChange={handleBbnChange} />
-          </Panel>
-          <PanelResizeHandle className="resize-handle" />
-          <Panel defaultSize={45} minSize={20} id="graph-panel">
+          <Panel defaultSize={60} minSize={30} id="graph-panel">
             <GraphPanel
               bbn={bbn}
               selection={selection}
@@ -53,7 +43,7 @@ export default function App() {
             />
           </Panel>
           <PanelResizeHandle className="resize-handle" />
-          <Panel defaultSize={30} minSize={15} id="detail-panel">
+          <Panel defaultSize={40} minSize={20} id="detail-panel">
             <DetailPanel selection={selection} bbn={bbn} />
           </Panel>
         </PanelGroup>
