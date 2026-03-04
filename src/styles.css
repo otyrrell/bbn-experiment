@@ -1,3 +1,92 @@
+/* === JSON Input Panel === */
+.json-input-panel {
+  flex: 0 0 360px;
+  display: flex;
+  flex-direction: column;
+  background: #1e293b;
+  border-right: 1px solid #334155;
+  z-index: 1;
+}
+
+.json-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+}
+
+.json-toolbar h2 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  letter-spacing: 0.02em;
+}
+
+.json-toolbar-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.json-toolbar button {
+  padding: 5px 12px;
+  border: 1px solid #475569;
+  border-radius: 5px;
+  background: #334155;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.json-toolbar button:hover {
+  background: #475569;
+  border-color: #64748b;
+}
+
+#render-btn {
+  background: #4f46e5;
+  border-color: #6366f1;
+}
+
+#render-btn:hover {
+  background: #6366f1;
+}
+
+#json-input {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 14px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  background: #1e293b;
+  color: #e2e8f0;
+  tab-size: 2;
+}
+
+#json-input::placeholder {
+  color: #64748b;
+}
+
+.json-error {
+  padding: 8px 14px;
+  background: #7f1d1d;
+  color: #fecaca;
+  font-size: 0.8rem;
+  border-top: 1px solid #991b1b;
+}
+
+.viewer-panel {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
 /* === Layout === */
 .bbn-viewer {
   display: flex;
