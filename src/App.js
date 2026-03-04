@@ -1,34 +1,37 @@
-import React, { useState } from "react";
-import { Group, Panel, Separator } from "react-resizable-panels";
-import JsonExamplePanel from "./components/JsonExamplePanel";
+import React, { useState, useCallback, useEffect } from "react";
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import GraphPanel from "./components/GraphPanel";
-import DetailViewPanel from "./components/DetailViewPanel";
+import DetailPanel from "./components/DetailPanel";
 import "./App.css";
 
-const sampleData = {
-  nodes: [
-    { id: "A", label: "Rain", value: 0.7 },
-    { id: "B", label: "Sprinkler", value: 0.4 },
-    { id: "C", label: "Wet Grass", value: 0.9 },
-    { id: "D", label: "Slippery Road", value: 0.6 },
-  ],
-  edges: [
-    { from: "A", to: "B", weight: 0.3 },
-    { from: "A", to: "C", weight: 0.8 },
-    { from: "B", to: "C", weight: 0.9 },
-    { from: "A", to: "D", weight: 0.7 },
-  ],
-};
-
 export default function App() {
-  const [selectedNode, setSelectedNode] = useState(null);
+  const [bbn, setBbn] = useState(null);
+  const [selection, setSelection] = useState(null);
 
-  const handleNodeSelect = (nodeId) => {
-    const node = sampleData.nodes.find((n) => n.id === nodeId);
-    const incomingEdges = sampleData.edges.filter((e) => e.to === nodeId);
-    const outgoingEdges = sampleData.edges.filter((e) => e.from === nodeId);
-    setSelectedNode(node ? { ...node, incomingEdges, outgoingEdges } : null);
-  };
+  useEffect(() => {
+    // If BBN data is embedded in the page (static export), use it directly
+    if (window.__BBN_DATA__) {
+      setBbn(window.__BBN_DATA__);
+      return;
+    }
+    // Otherwise fetch the example file (dev mode)
+    fetch(process.env.PUBLIC_URL + "/example-bbn.json")
+      .then((r) => r.json())
+      .then(setBbn)
+      .catch((e) => console.error("Failed to load example BBN:", e));
+  }, []);
+
+  const handleSelect = useCallback((sel) => {
+    setSelection(sel);
+  }, []);
+
+  if (!bbn) {
+    return (
+      <div className="app">
+        <div className="loading">Loading example BBN...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -37,26 +40,19 @@ export default function App() {
         <span className="subtitle">Bayesian Belief Network Explorer</span>
       </header>
       <div className="app-body">
-        <Group direction="horizontal" autoSaveId="main-layout">
-          <Panel defaultSize={30} minSize={15} id="json-panel">
-            <JsonExamplePanel data={sampleData} />
-          </Panel>
-          <Separator className="resize-handle" />
-          <Panel defaultSize={40} minSize={20} id="graph-panel">
+        <PanelGroup direction="horizontal" autoSaveId="main-layout">
+          <Panel defaultSize={60} minSize={30} id="graph-panel">
             <GraphPanel
-              data={sampleData}
-              selectedNodeId={selectedNode?.id}
-              onNodeSelect={handleNodeSelect}
+              bbn={bbn}
+              selection={selection}
+              onSelect={handleSelect}
             />
           </Panel>
-          <Separator className="resize-handle" />
-          <Panel defaultSize={30} minSize={15} id="detail-panel">
-            <DetailViewPanel
-              node={selectedNode}
-              allNodes={sampleData.nodes}
-            />
+          <PanelResizeHandle className="resize-handle" />
+          <Panel defaultSize={40} minSize={20} id="detail-panel">
+            <DetailPanel selection={selection} bbn={bbn} onSelect={handleSelect} />
           </Panel>
-        </Group>
+        </PanelGroup>
       </div>
     </div>
   );

@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bbn-viz"
+version = "0.1.0"
+description = "Generate self-contained HTML visualizations from BBN JSON data"
+requires-python = ">=3.8"
+
+[project.scripts]
+bbn-viz = "bbn_viz.__main__:main"
+
+[tool.setuptools.package-data]
+bbn_viz = ["_assets/*"]
