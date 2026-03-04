@@ -1,13 +1,5 @@
 import React from "react";
 
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 function formatProb(p) {
   if (p == null) return "\u2014";
   return (p * 100).toFixed(1) + "%";
@@ -47,72 +39,87 @@ function ProbBar({ label, value }) {
   );
 }
 
-function PriorTable({ node }) {
-  const dist = node.cpt;
+function FunctionDisplay({ node, parents }) {
+  const func = node.function;
+  if (!func) return null;
+
   return (
-    <>
-      <table className="cpt-table">
-        <thead>
-          <tr>
-            {node.states.map((s) => (
-              <th key={s}>{s}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            {node.states.map((s) => (
-              <td key={s}>{formatProb(dist[s])}</td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
-      <div className="prob-bars">
-        {node.states.map((s) => (
-          <ProbBar key={s} label={s} value={dist[s]} />
-        ))}
-      </div>
-    </>
+    <div className="function-display">
+      <div className="function-type-badge">{func.type.replace(/_/g, " ")}</div>
+      {func.display && <p className="function-desc">{func.display}</p>}
+      {func.formula && <code className="function-formula">{func.formula}</code>}
+      {func.params && (
+        <div className="function-params">
+          <h4>Parameters</h4>
+          {Object.entries(func.params).map(([key, val]) => (
+            <div key={key} className="param-row">
+              <span className="param-key">{key}</span>
+              <span className="param-val">
+                {typeof val === "object"
+                  ? Object.entries(val).map(([k, v]) => {
+                      const parentNode = parents.find((p) => p.id === k);
+                      const displayName = parentNode ? parentNode.label : k;
+                      return (
+                        <span key={k} className="param-map-entry">
+                          {displayName}: {typeof v === "number" ? v.toFixed(2) : String(v)}
+                        </span>
+                      );
+                    })
+                  : String(val)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-function CPTTable({ node, parents }) {
-  const cpt = node.cpt;
+function ParentList({ parents }) {
   return (
-    <div className="cpt-scroll">
-      <table className="cpt-table">
-        <thead>
-          <tr>
-            {parents.map((p) => (
-              <th key={p.id} className="parent-col">
-                {p.label}
-              </th>
-            ))}
-            {node.states.map((s) => (
-              <th key={s} className="prob-col">
-                {s}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {cpt.map((row, i) => (
-            <tr key={i}>
-              {parents.map((p) => (
-                <td key={p.id} className="parent-val">
-                  {row.conditions[p.id] ?? "\u2014"}
-                </td>
-              ))}
-              {node.states.map((s) => (
-                <td key={s} className="prob-val">
-                  {formatProb(row.probabilities[s])}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <ul className="relations">
+      {parents.map((p) => (
+        <li key={p.id} className="parent-row">
+          <span className="parent-name">{p.label}</span>
+          <span className="parent-value-bar">
+            <span
+              className="parent-value-fill"
+              style={{
+                width: `${(p.value ?? 0) * 100}%`,
+                background: probToColor(p.value),
+              }}
+            />
+          </span>
+          <span className="parent-value-num" style={{ color: probToColor(p.value) }}>
+            {formatProb(p.value)}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ChildList({ children }) {
+  return (
+    <ul className="relations">
+      {children.map((c) => (
+        <li key={c.id} className="parent-row">
+          <span className="parent-name">{c.label}</span>
+          <span className="parent-value-bar">
+            <span
+              className="parent-value-fill"
+              style={{
+                width: `${(c.value ?? 0) * 100}%`,
+                background: probToColor(c.value),
+              }}
+            />
+          </span>
+          <span className="parent-value-num" style={{ color: probToColor(c.value) }}>
+            {formatProb(c.value)}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -131,58 +138,32 @@ function NodeDetail({ node, bbn }) {
         <span className={`detail-type-badge ${isRoot ? "root" : "child"}`}>
           {isRoot ? "Root Node" : "Child Node"}
         </span>
-        {node.evidence && (
-          <span className="detail-type-badge evidence">
-            Evidence: {node.evidence}
-          </span>
-        )}
       </div>
       <h2>{node.label}</h2>
       {node.description && <p className="description">{node.description}</p>}
 
       <section>
-        <h3>States</h3>
-        <div className="states-list">
-          {node.states.map((s) => (
-            <span
-              key={s}
-              className={`state-chip ${node.evidence === s ? "active" : ""}`}
-            >
-              {s}
-            </span>
-          ))}
-        </div>
+        <h3>Confidence</h3>
+        <ProbBar label="" value={node.value} />
       </section>
 
       {parents.length > 0 && (
         <section>
           <h3>Parents</h3>
-          <ul className="relations">
-            {parents.map((p) => (
-              <li key={p.id}>{p.label}</li>
-            ))}
-          </ul>
+          <ParentList parents={parents} />
         </section>
       )}
 
       {children.length > 0 && (
         <section>
           <h3>Children</h3>
-          <ul className="relations">
-            {children.map((c) => (
-              <li key={c.id}>{c.label}</li>
-            ))}
-          </ul>
+          <ChildList children={children} />
         </section>
       )}
 
       <section>
-        <h3>{isRoot ? "Prior Distribution" : "Conditional Probability Table"}</h3>
-        {isRoot ? (
-          <PriorTable node={node} />
-        ) : (
-          <CPTTable node={node} parents={parents} />
-        )}
+        <h3>{isRoot ? "Prior" : "Calculation Function"}</h3>
+        <FunctionDisplay node={node} parents={parents} />
       </section>
 
       {node.meta && (
@@ -227,13 +208,7 @@ function EdgeDetail({ edge, bbn }) {
         <h3>Source Node</h3>
         <div className="edge-node-info">
           <strong>{source.label}</strong>
-          <div className="states-list">
-            {source.states.map((s) => (
-              <span key={s} className="state-chip">
-                {s}
-              </span>
-            ))}
-          </div>
+          <ProbBar label="" value={source.value} />
         </div>
       </section>
 
@@ -241,13 +216,7 @@ function EdgeDetail({ edge, bbn }) {
         <h3>Target Node</h3>
         <div className="edge-node-info">
           <strong>{target.label}</strong>
-          <div className="states-list">
-            {target.states.map((s) => (
-              <span key={s} className="state-chip">
-                {s}
-              </span>
-            ))}
-          </div>
+          <ProbBar label="" value={target.value} />
         </div>
       </section>
 

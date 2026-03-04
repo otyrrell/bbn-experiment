@@ -423,6 +423,125 @@ section h3 {
   color: #e2e8f0;
 }
 
+/* Function display */
+.function-display {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.function-type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #312e81;
+  color: #a5b4fc;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.function-desc {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  margin: 6px 0;
+}
+
+.function-formula {
+  display: block;
+  padding: 8px 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 0.82rem;
+  color: #fbbf24;
+  margin: 8px 0;
+}
+
+.function-params h4 {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin: 10px 0 6px;
+}
+
+.param-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid #1e293b;
+}
+
+.param-row:last-child {
+  border-bottom: none;
+}
+
+.param-key {
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.param-val {
+  flex: 1;
+  font-size: 0.78rem;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.param-map-entry {
+  display: block;
+  padding: 2px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Parent/child rows with value bars */
+.parent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.parent-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parent-value-bar {
+  flex: 0 0 60px;
+  height: 6px;
+  background: #334155;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.parent-value-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.parent-value-num {
+  flex: 0 0 44px;
+  text-align: right;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Metadata */
 .meta-json {
   background: #0f172a;

@@ -29,8 +29,9 @@ function probToColor(p) {
   return `rgb(${r},${g},${b})`;
 }
 
-// Get the "positive" probability for a node — the first state's marginal
+// Get the confidence value for a node
 function getNodeProbability(node) {
+  if (node.value != null) return node.value;
   if (!node.marginals) return null;
   const states = node.states || Object.keys(node.marginals);
   if (states.length === 0) return null;
