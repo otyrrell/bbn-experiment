@@ -188,13 +188,10 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       const res = { ...attrs };
       if (sel.type === "node") {
         if (nodeId === sel.id) {
-          // Keep probability color, enlarge + highlight ring
-          res.highlighted = true;
+          // Selected node: keep normal color, just bump z-index
           res.zIndex = 2;
-          res.size = (attrs.size || 10) + 6;
         } else if (ancestorSet.has(nodeId)) {
-          // Ancestors keep their color, label, and size
-          res.highlighted = true;
+          // Ancestors keep their normal appearance
           res.zIndex = 1;
         } else {
           // Faded: nearly invisible, shrunk, no label
