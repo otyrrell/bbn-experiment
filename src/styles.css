@@ -362,6 +362,137 @@ section h3 {
   background: linear-gradient(90deg, #22c55e, #16a34a);
 }
 
+/* === Test Query === */
+.detail-type-badge.test-query { background: #dcfce7; color: #166534; }
+
+.test-query-section {
+  margin-top: 20px;
+}
+
+.test-query-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.test-query-description {
+  font-size: 0.875rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.test-query-function {
+  background: #1e293b;
+  border-radius: 6px;
+  padding: 10px 14px;
+  overflow-x: auto;
+}
+
+.test-query-function code {
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 0.82rem;
+  color: #a5f3fc;
+  white-space: nowrap;
+}
+
+.test-query-params {
+  margin-top: 4px;
+}
+
+.test-query-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.test-result-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.test-result-passed {
+  background: #22c55e;
+}
+
+.test-result-failed {
+  background: #ef4444;
+}
+
+.test-result-skipped {
+  background: #f59e0b;
+}
+
+.test-result-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.8rem;
+}
+
+.test-count {
+  font-weight: 500;
+}
+
+.test-count.passed { color: #16a34a; }
+.test-count.failed { color: #dc2626; }
+.test-count.skipped { color: #d97706; }
+.test-count.total { color: #64748b; }
+
+.test-query-allure {
+  margin-top: 4px;
+}
+
+.allure-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #4f46e5;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.allure-link:hover {
+  background: #6366f1;
+}
+
+.test-query-logs summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #64748b;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.test-query-logs summary:hover {
+  color: #475569;
+}
+
+.log-output {
+  background: #0f172a;
+  color: #94a3b8;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-top: 8px;
+}
+
 /* === Metadata === */
 .meta-json {
   background: #f1f5f9;

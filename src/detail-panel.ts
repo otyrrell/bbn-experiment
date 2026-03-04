@@ -1,4 +1,4 @@
-import type { BBNDefinition, BBNNode, BBNEdge, Selection, CPT, CPTRow } from "./types";
+import type { BBNDefinition, BBNNode, BBNEdge, Selection, CPT, CPTRow, TestQuery } from "./types";
 
 /**
  * Creates and manages the right-hand detail panel.
@@ -41,6 +41,61 @@ export function createDetailPanel(container: HTMLElement, bbn: BBNDefinition) {
     `;
   }
 
+  function renderTestQuery(tq: TestQuery): string {
+    const paramEntries = Object.entries(tq.params);
+    const summary = tq.resultSummary;
+    const passRate = summary ? (summary.passed / summary.total * 100).toFixed(1) : null;
+
+    return `
+      <section class="test-query-section">
+        <h3>Test Query</h3>
+        <div class="test-query-box">
+          <div class="test-query-description">${escapeHtml(tq.description)}</div>
+          <div class="test-query-function">
+            <code>${escapeHtml(tq.function)}(${paramEntries.map(([k, v]) => `${escapeHtml(k)}: ${escapeHtml(JSON.stringify(v))}`).join(", ")})</code>
+          </div>
+          ${paramEntries.length > 0 ? `
+          <div class="test-query-params">
+            <table class="cpt-table">
+              <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+              <tbody>
+                ${paramEntries.map(([k, v]) => `<tr><td class="parent-val">${escapeHtml(k)}</td><td>${escapeHtml(JSON.stringify(v))}</td></tr>`).join("")}
+              </tbody>
+            </table>
+          </div>` : ""}
+          ${summary ? `
+          <div class="test-query-results">
+            <div class="test-result-bar">
+              <div class="test-result-passed" style="width:${(summary.passed / summary.total) * 100}%"></div>
+              <div class="test-result-failed" style="width:${(summary.failed / summary.total) * 100}%"></div>
+              <div class="test-result-skipped" style="width:${(summary.skipped / summary.total) * 100}%"></div>
+            </div>
+            <div class="test-result-counts">
+              <span class="test-count passed">${summary.passed} passed</span>
+              <span class="test-count failed">${summary.failed} failed</span>
+              <span class="test-count skipped">${summary.skipped} skipped</span>
+              <span class="test-count total">${summary.total} total (${passRate}%)</span>
+            </div>
+          </div>` : ""}
+          ${tq.allureReportUrl ? `
+          <div class="test-query-allure">
+            <a href="${escapeHtml(tq.allureReportUrl)}" target="_blank" rel="noopener noreferrer" class="allure-link">
+              View Allure Report &rarr;
+            </a>
+          </div>` : ""}
+        </div>
+      </section>
+      ${tq.logs && tq.logs.length > 0 ? `
+      <section>
+        <h3>Query Execution Log</h3>
+        <details class="test-query-logs">
+          <summary>${tq.logs.length} log line${tq.logs.length !== 1 ? "s" : ""}</summary>
+          <pre class="log-output">${tq.logs.map((l) => escapeHtml(l)).join("\n")}</pre>
+        </details>
+      </section>` : ""}
+    `;
+  }
+
   function renderNode(node: BBNNode, showInference: boolean) {
     const parents = bbn.edges.filter((e) => e.target === node.id).map((e) => bbn.nodes.find((n) => n.id === e.source)!);
     const children = bbn.edges.filter((e) => e.source === node.id).map((e) => bbn.nodes.find((n) => n.id === e.target)!);
@@ -52,12 +107,15 @@ export function createDetailPanel(container: HTMLElement, bbn: BBNDefinition) {
           <span class="detail-type-badge ${isRoot ? "root" : "child"}">
             ${isRoot ? "Root Node" : "Child Node"}
           </span>
+          ${node.testQuery ? `<span class="detail-type-badge test-query">Test-Driven</span>` : ""}
           ${node.evidence ? `<span class="detail-type-badge evidence">Evidence: ${escapeHtml(node.evidence)}</span>` : ""}
         </div>
         <h2>${escapeHtml(node.label)}</h2>
         ${node.description ? `<p class="description">${escapeHtml(node.description)}</p>` : ""}
 
         ${showInference ? renderMarginalBars(node) : ""}
+
+        ${node.testQuery ? renderTestQuery(node.testQuery) : ""}
 
         <section>
           <h3>States</h3>

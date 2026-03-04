@@ -16,6 +16,30 @@ export type CPT = CPTRow[];
 /** Prior probability distribution for a root node (no parents) */
 export type PriorDistribution = Record<string, number>;
 
+/**
+ * Describes a query against an external test results database
+ * that determines a root node's prior distribution.
+ */
+export interface TestQuery {
+  /** Human-readable description of the query function */
+  description: string;
+  /** Name of the query function or endpoint called */
+  function: string;
+  /** Parameters passed to the query function */
+  params: Record<string, unknown>;
+  /** Log lines from executing the query */
+  logs?: string[];
+  /** URL to an Allure report containing the relevant test results */
+  allureReportUrl?: string;
+  /** Summary of the test results used to compute the prior */
+  resultSummary?: {
+    total: number;
+    passed: number;
+    failed: number;
+    skipped: number;
+  };
+}
+
 /** A node in the Bayesian Belief Network */
 export interface BBNNode {
   id: string;
@@ -30,6 +54,8 @@ export interface BBNNode {
   evidence?: string;
   /** Optional computed/provided marginal distribution for inference view */
   marginals?: Record<string, number>;
+  /** For root nodes: the test query that produced the prior distribution */
+  testQuery?: TestQuery;
   /** Arbitrary metadata */
   meta?: Record<string, unknown>;
 }

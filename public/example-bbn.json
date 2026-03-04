@@ -10,11 +10,35 @@
         "moderate",
         "severe"
       ],
-      "description": "Overall climate patterns affecting the city",
+      "description": "Overall climate patterns affecting the city. Prior derived from weather resilience test suite results.",
       "cpt": {
         "favorable": 0.3,
         "moderate": 0.5,
         "severe": 0.2
+      },
+      "testQuery": {
+        "description": "Query weather resilience test results to determine climate condition distribution based on pass/fail/skip rates across severity categories.",
+        "function": "queryTestResults",
+        "params": {
+          "suite": "weather-resilience",
+          "tags": ["climate", "outdoor-infrastructure"],
+          "environment": "staging",
+          "sinceDate": "2025-01-01"
+        },
+        "logs": [
+          "2025-06-15T10:23:01Z [INFO] Connecting to test database at test-data-experiment-d8650b.gitlab.io",
+          "2025-06-15T10:23:01Z [INFO] Querying suite=weather-resilience, tags=[climate, outdoor-infrastructure]",
+          "2025-06-15T10:23:02Z [INFO] Found 120 test results since 2025-01-01",
+          "2025-06-15T10:23:02Z [INFO] Breakdown: 36 favorable (30.0%), 60 moderate (50.0%), 24 severe (20.0%)",
+          "2025-06-15T10:23:02Z [INFO] Computed prior distribution from test result categories"
+        ],
+        "allureReportUrl": "https://test-data-experiment-d8650b.gitlab.io/allure/weather-resilience/",
+        "resultSummary": {
+          "total": 120,
+          "passed": 96,
+          "failed": 18,
+          "skipped": 6
+        }
       },
       "meta": {
         "layer": 1
@@ -33,11 +57,35 @@
         "moderate",
         "conservative"
       ],
-      "description": "Government economic policy orientation",
+      "description": "Government economic policy orientation. Prior derived from policy compliance test suite.",
       "cpt": {
         "progressive": 0.35,
         "moderate": 0.4,
         "conservative": 0.25
+      },
+      "testQuery": {
+        "description": "Query policy compliance test results to classify economic policy stance based on regulatory test outcomes.",
+        "function": "queryTestResults",
+        "params": {
+          "suite": "policy-compliance",
+          "tags": ["economic", "regulatory"],
+          "environment": "production",
+          "sinceDate": "2025-03-01"
+        },
+        "logs": [
+          "2025-06-15T10:24:10Z [INFO] Connecting to test database at test-data-experiment-d8650b.gitlab.io",
+          "2025-06-15T10:24:10Z [INFO] Querying suite=policy-compliance, tags=[economic, regulatory]",
+          "2025-06-15T10:24:11Z [INFO] Found 200 test results since 2025-03-01",
+          "2025-06-15T10:24:11Z [INFO] Classification: 70 progressive (35.0%), 80 moderate (40.0%), 50 conservative (25.0%)",
+          "2025-06-15T10:24:11Z [INFO] Computed prior distribution from test result classification"
+        ],
+        "allureReportUrl": "https://test-data-experiment-d8650b.gitlab.io/allure/policy-compliance/",
+        "resultSummary": {
+          "total": 200,
+          "passed": 170,
+          "failed": 22,
+          "skipped": 8
+        }
       },
       "meta": {
         "layer": 1
@@ -79,11 +127,38 @@
         "medium",
         "low"
       ],
-      "description": "Level of public and private technology investment",
+      "description": "Level of public and private technology investment. Prior derived from tech integration test suite.",
       "cpt": {
         "high": 0.3,
         "medium": 0.45,
         "low": 0.25
+      },
+      "testQuery": {
+        "description": "Query technology integration test results to assess investment level based on feature adoption and API stability tests.",
+        "function": "queryTestResults",
+        "params": {
+          "suite": "tech-integration",
+          "tags": ["api-stability", "feature-adoption", "infrastructure"],
+          "environment": "staging",
+          "sinceDate": "2025-01-15",
+          "minSeverity": "normal"
+        },
+        "logs": [
+          "2025-06-15T10:25:30Z [INFO] Connecting to test database at test-data-experiment-d8650b.gitlab.io",
+          "2025-06-15T10:25:30Z [INFO] Querying suite=tech-integration, tags=[api-stability, feature-adoption, infrastructure]",
+          "2025-06-15T10:25:31Z [INFO] Filtering by minSeverity=normal",
+          "2025-06-15T10:25:31Z [INFO] Found 80 test results since 2025-01-15",
+          "2025-06-15T10:25:31Z [WARN] 5 tests had inconclusive results, classified as 'medium'",
+          "2025-06-15T10:25:32Z [INFO] Investment level: 24 high (30.0%), 36 medium (45.0%), 20 low (25.0%)",
+          "2025-06-15T10:25:32Z [INFO] Computed prior distribution from test result analysis"
+        ],
+        "allureReportUrl": "https://test-data-experiment-d8650b.gitlab.io/allure/tech-integration/",
+        "resultSummary": {
+          "total": 80,
+          "passed": 60,
+          "failed": 15,
+          "skipped": 5
+        }
       },
       "meta": {
         "layer": 1
