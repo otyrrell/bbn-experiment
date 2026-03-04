@@ -5,9 +5,9 @@ import forceAtlas2 from "graphology-layout-forceatlas2";
 
 // Modern, bold lighter palette
 const EDGE_DEFAULT_COLOR = "#475569";
-const EDGE_SELECTED_COLOR = "#60a5fa";
-const EDGE_FADED_COLOR = "#1e293b";
-const NODE_FADED_COLOR = "#334155";
+const EDGE_SELECTED_COLOR = "#93c5fd";
+const EDGE_FADED_COLOR = "#1e293b40";
+const NODE_FADED_COLOR = "#1e293b";
 const NODE_SELECTED_COLOR = "#3b82f6";
 const NODE_HOVER_RING = "#60a5fa";
 
@@ -188,17 +188,18 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       const res = { ...attrs };
       if (sel.type === "node") {
         if (nodeId === sel.id) {
-          // Keep probability color, add highlight ring
+          // Keep probability color, enlarge + highlight ring
           res.highlighted = true;
           res.zIndex = 2;
-          res.size = (attrs.size || 10) + 4;
+          res.size = (attrs.size || 10) + 6;
         } else if (ancestorSet.has(nodeId)) {
-          // Ancestors keep their color and label
+          // Ancestors keep their color, label, and size
           res.highlighted = true;
           res.zIndex = 1;
         } else {
-          // Faded: dim solid color, hide label
+          // Faded: nearly invisible, shrunk, no label
           res.color = NODE_FADED_COLOR;
+          res.size = (attrs.size || 10) * 0.4;
           res.label = "";
           res.zIndex = 0;
         }
