@@ -113,20 +113,21 @@ function assignHierarchicalLayout(graph, bbn) {
   // Scale spacing based on the widest layer to prevent overlap
   const maxLayerSize = Math.max(...[...layers.values()].map((l) => l.length));
   const nodeCount = bbn.nodes.length;
-  const ySpacing = nodeCount > 50 ? 500 : 350;
-  const xSpacing = nodeCount > 50 ? 400 : 250;
+  // Left-to-right layout: depth controls X, layer index controls Y
+  const xSpacing = nodeCount > 50 ? 500 : 350;
+  const ySpacing = nodeCount > 50 ? 400 : 250;
 
   for (const [layerDepth, nodeIds] of layers) {
-    const layerWidth = (nodeIds.length - 1) * xSpacing;
-    const startX = -layerWidth / 2;
+    const layerHeight = (nodeIds.length - 1) * ySpacing;
+    const startY = -layerHeight / 2;
     for (let i = 0; i < nodeIds.length; i++) {
-      graph.setNodeAttribute(nodeIds[i], "x", startX + i * xSpacing);
-      graph.setNodeAttribute(nodeIds[i], "y", layerDepth * ySpacing);
+      graph.setNodeAttribute(nodeIds[i], "x", layerDepth * xSpacing);
+      graph.setNodeAttribute(nodeIds[i], "y", startY + i * ySpacing);
     }
   }
 
-  const savedY = new Map();
-  graph.forEachNode((id, attrs) => savedY.set(id, attrs.y));
+  const savedX = new Map();
+  graph.forEachNode((id, attrs) => savedX.set(id, attrs.x));
 
   forceAtlas2.assign(graph, {
     iterations: 200,
@@ -140,9 +141,9 @@ function assignHierarchicalLayout(graph, bbn) {
     },
   });
 
-  // Restore Y to keep hierarchy, but let X spread out
+  // Restore X to keep left-to-right hierarchy, but let Y spread out
   graph.forEachNode((id) => {
-    graph.setNodeAttribute(id, "y", savedY.get(id));
+    graph.setNodeAttribute(id, "x", savedX.get(id));
   });
 }
 
