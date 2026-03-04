@@ -5,9 +5,9 @@ import forceAtlas2 from "graphology-layout-forceatlas2";
 
 // Modern, bold lighter palette
 const EDGE_DEFAULT_COLOR = "#475569";
-const EDGE_SELECTED_COLOR = "#3b82f6";
-const EDGE_FADED_COLOR = "#e2e8f020";
-const NODE_FADED_COLOR = "#94a3b830";
+const EDGE_SELECTED_COLOR = "#60a5fa";
+const EDGE_FADED_COLOR = "#1e293b";
+const NODE_FADED_COLOR = "#334155";
 const NODE_SELECTED_COLOR = "#3b82f6";
 const NODE_HOVER_RING = "#60a5fa";
 
@@ -188,14 +188,16 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
       const res = { ...attrs };
       if (sel.type === "node") {
         if (nodeId === sel.id) {
-          res.color = NODE_SELECTED_COLOR;
+          // Keep probability color, add highlight ring
           res.highlighted = true;
           res.zIndex = 2;
+          res.size = (attrs.size || 10) + 4;
         } else if (ancestorSet.has(nodeId)) {
-          // Ancestor nodes keep their color but get highlighted
+          // Ancestors keep their color and label
           res.highlighted = true;
           res.zIndex = 1;
         } else {
+          // Faded: dim solid color, hide label
           res.color = NODE_FADED_COLOR;
           res.label = "";
           res.zIndex = 0;
@@ -210,7 +212,6 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
         res.color = EDGE_SELECTED_COLOR;
         res.size = (attrs.size || 2) + 2;
       } else if (sel.type === "node") {
-        // Match edge by graphology key — need to check source/target
         const source = graph.source(edgeId);
         const target = graph.target(edgeId);
         const edgeData = bbnRef.current.edges.find(
@@ -221,6 +222,7 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
           res.size = (attrs.size || 2) + 1;
         } else {
           res.color = EDGE_FADED_COLOR;
+          res.size = 0.5;
         }
       }
       return res;
