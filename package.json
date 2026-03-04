@@ -18,6 +18,7 @@
   },
   "keywords": ["bayesian", "belief-network", "bbn", "sigma", "visualization"],
   "author": "",
+  "homepage": "https://otyrrell.github.io/bbn-experiment",
   "license": "ISC",
   "dependencies": {
     "graphology": "^0.26.0",
