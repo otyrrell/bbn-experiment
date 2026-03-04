@@ -355,15 +355,23 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
 
       // Animate the camera to center on the selected node
       if (selection?.type === "node" && graphRef.current.hasNode(selection.id)) {
-        const displayData = rendererRef.current.getNodeDisplayData(selection.id);
-        if (displayData) {
-          const camera = rendererRef.current.getCamera();
-          const pos = rendererRef.current.viewportToFramedGraph(displayData);
-          camera.animate(
-            { x: pos.x, y: pos.y, ratio: Math.min(camera.ratio, 0.5) },
-            { duration: 300 }
-          );
-        }
+        const nodeAttrs = graphRef.current.getNodeAttributes(selection.id);
+        const camera = rendererRef.current.getCamera();
+        // Convert raw graph coordinates to framed-graph (camera) space
+        // using a neutral camera so the current camera state doesn't skew the result
+        const neutralCamera = { x: 0.5, y: 0.5, ratio: 1, angle: 0 };
+        const viewportPos = rendererRef.current.graphToViewport(
+          { x: nodeAttrs.x, y: nodeAttrs.y },
+          { cameraState: neutralCamera }
+        );
+        const framedPos = rendererRef.current.viewportToFramedGraph(
+          viewportPos,
+          { cameraState: neutralCamera }
+        );
+        camera.animate(
+          { x: framedPos.x, y: framedPos.y, ratio: Math.min(camera.ratio, 0.5) },
+          { duration: 300 }
+        );
       }
     }
   }, [selection, applySelection]);
