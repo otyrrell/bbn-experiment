@@ -350,6 +350,16 @@ export default function GraphPanel({ bbn, selection, onSelect }) {
   useEffect(() => {
     if (rendererRef.current && graphRef.current) {
       applySelection(rendererRef.current, graphRef.current, selection);
+
+      // Animate the camera to center on the selected node
+      if (selection?.type === "node" && graphRef.current.hasNode(selection.id)) {
+        const nodeAttrs = graphRef.current.getNodeAttributes(selection.id);
+        const camera = rendererRef.current.getCamera();
+        camera.animate(
+          { x: nodeAttrs.x, y: nodeAttrs.y, ratio: Math.min(camera.ratio, 0.5) },
+          { duration: 300 }
+        );
+      }
     }
   }, [selection, applySelection]);
 
