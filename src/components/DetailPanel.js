@@ -85,13 +85,17 @@ function EdgeAttrBadge({ attr }) {
   return <span className="edge-prop-categorical">{attr.value}</span>;
 }
 
-function ParentList({ parentEdges }) {
+function ParentList({ parentEdges, onSelect }) {
   return (
     <ul className="relations parent-list">
       {parentEdges.map(({ node: p, edge }) => {
         const attr = getEdgeAttr(edge);
         return (
-          <li key={p.id} className="parent-row-detailed">
+          <li
+            key={p.id}
+            className="parent-row-detailed clickable"
+            onClick={() => onSelect({ type: "node", id: p.id })}
+          >
             <div className="parent-main">
               <span className="parent-name">{p.label}</span>
               <EdgeAttrBadge attr={attr} />
@@ -118,11 +122,15 @@ function ParentList({ parentEdges }) {
   );
 }
 
-function ChildList({ children }) {
+function ChildList({ children, onSelect }) {
   return (
     <ul className="relations">
       {children.map((c) => (
-        <li key={c.id} className="parent-row">
+        <li
+          key={c.id}
+          className="parent-row clickable"
+          onClick={() => onSelect({ type: "node", id: c.id })}
+        >
           <span className="parent-name">{c.label}</span>
           <span className="parent-value-bar">
             <span
@@ -145,7 +153,7 @@ function ChildList({ children }) {
   );
 }
 
-function NodeDetail({ node, bbn }) {
+function NodeDetail({ node, bbn, onSelect }) {
   const parentEdges = bbn.edges
     .filter((e) => e.target === node.id)
     .map((e) => ({
@@ -175,14 +183,14 @@ function NodeDetail({ node, bbn }) {
       {parentEdges.length > 0 && (
         <section>
           <h3>Parents</h3>
-          <ParentList parentEdges={parentEdges} />
+          <ParentList parentEdges={parentEdges} onSelect={onSelect} />
         </section>
       )}
 
       {children.length > 0 && (
         <section>
           <h3>Children</h3>
-          <ChildList children={children} />
+          <ChildList children={children} onSelect={onSelect} />
         </section>
       )}
 
@@ -203,7 +211,7 @@ function NodeDetail({ node, bbn }) {
   );
 }
 
-function EdgeDetail({ edge, bbn }) {
+function EdgeDetail({ edge, bbn, onSelect }) {
   const source = bbn.nodes.find((n) => n.id === edge.source);
   const target = bbn.nodes.find((n) => n.id === edge.target);
   const attr = getEdgeAttr(edge);
@@ -244,7 +252,10 @@ function EdgeDetail({ edge, bbn }) {
 
       <section>
         <h3>Source Node</h3>
-        <div className="edge-node-info">
+        <div
+          className="edge-node-info clickable"
+          onClick={() => onSelect({ type: "node", id: source.id })}
+        >
           <strong>{source.label}</strong>
           <ProbBar label="" value={source.value} />
         </div>
@@ -252,7 +263,10 @@ function EdgeDetail({ edge, bbn }) {
 
       <section>
         <h3>Target Node</h3>
-        <div className="edge-node-info">
+        <div
+          className="edge-node-info clickable"
+          onClick={() => onSelect({ type: "node", id: target.id })}
+        >
           <strong>{target.label}</strong>
           <ProbBar label="" value={target.value} />
         </div>
@@ -261,7 +275,7 @@ function EdgeDetail({ edge, bbn }) {
   );
 }
 
-export default function DetailPanel({ selection, bbn }) {
+export default function DetailPanel({ selection, bbn, onSelect }) {
   if (!selection) {
     return (
       <div className="panel">
@@ -294,11 +308,13 @@ export default function DetailPanel({ selection, bbn }) {
       <NodeDetail
         node={bbn.nodes.find((n) => n.id === selection.id)}
         bbn={bbn}
+        onSelect={onSelect}
       />
     ) : (
       <EdgeDetail
         edge={bbn.edges.find((e) => e.id === selection.id)}
         bbn={bbn}
+        onSelect={onSelect}
       />
     );
 

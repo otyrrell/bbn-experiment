@@ -50,7 +50,7 @@ export default function App() {
           </Panel>
           <PanelResizeHandle className="resize-handle" />
           <Panel defaultSize={40} minSize={20} id="detail-panel">
-            <DetailPanel selection={selection} bbn={bbn} />
+            <DetailPanel selection={selection} bbn={bbn} onSelect={handleSelect} />
           </Panel>
         </PanelGroup>
       </div>

@@ -323,6 +323,16 @@ section h3 {
   color: #e2e8f0;
 }
 
+.clickable {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.clickable:hover {
+  background: #334155;
+  border-radius: 4px;
+}
+
 .relations li:last-child {
   border-bottom: none;
 }
